@@ -10,9 +10,14 @@ const mapInfo = [
         "lon" : "127.024612"
     },
     {
-        "name": "New York",
-        "lat" : "40.730610",
-        "lon" : "-73.935242"
+        "name": "China",
+        "lat" : "35.0000",
+        "lon" : "103.0000"
+    },
+    {
+        "name": "Wuhan",
+        "lat" : "30.583332",
+        "lon" : "114.283333"
     }
 ];
 
@@ -50,6 +55,7 @@ d3.json("world.json")
         console.log(scale, offset);
 
         var toggleKoreaFillColor = false;
+        var toggleWuhanCircleR = false;
 
         g
         .selectAll('path').data(geojson.features)
@@ -88,31 +94,115 @@ d3.json("world.json")
         g.transition().style('background-color', 'blue');
 
         const cur_brower = browserCheck();
-        const transforms = cur_brower === 'Chrome' ? 'scale(15)' : 'translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')';
+        const transforms = cur_brower === 'Chrome' ? '' : 'translate(' + -width*7 + ',' + -height*7 + ') scale(15)';
 
-        // const icons = svg.append('g').selectAll('svg')
-        //     .data(mapInfo)
-        //     .enter()  
-        //     .append("rect")
-        //     .attr("width", 10)
-        //     .attr("height", 10)
-        //     .attr('fill', 'green')
-        //     .attr('x' ,  d => projection([d.lon, d.lat])[0])
-        //     .attr('y' ,  d => projection([d.lon, d.lat])[1])
-        //     .attr('opacity', 1)
-        //     .on('click', function(d, i) {
-        //         console.log(projection([i.lon, i.lat])[0]);
-        //         g.transition()
-        //         .duration(2000)
-        //         .attr('transform-origin', 'center')
-        //         .attr('transform', transforms + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')');
-        //     });
+        const icons = svg.append('g').selectAll('svg')
+            .data(mapInfo)
+            .enter()  
+            .append("rect")
+            .attr("width", 10)
+            .attr("height", 10)
+            .attr('fill', 'green')
+            .attr('x' ,  d => projection([d.lon, d.lat])[0])
+            .attr('y' ,  d => projection([d.lon, d.lat])[1])
+            .attr('opacity', 1)
+            .on('click', function(d, i) {
+                var zoomLevel = 15;
+                var multiplyLevel = 7;
+                if (i.name === 'China') {
+                    zoomLevel = 10;
+                    multiplyLevel = 4.5;
+                }
+                console.log(projection([i.lon, i.lat])[0]);
+                g.transition()
+                .duration(2000)
+                .attr('transform-origin', 'center')
+                .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*multiplyLevel + ',' + -height*multiplyLevel + ') scale(' + zoomLevel + ')' + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')') : ('scale(' + zoomLevel + ') translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'));
+
+                if (i.name === 'Wuhan') {
+                    svg.append('g').selectAll('svg')
+                        .data([0])
+                        .enter()
+                        .append('circle')
+                        .attr('cx', width/2)
+                        .attr('cy', height/2)
+                        .attr('r', 5)
+                        .attr('fill', 'orange')
+                        .attr('opacity', 0)
+                        .on('click', function() {
+                            toggleWuhanCircleR = !toggleWuhanCircleR;
+                            console.log('clicked');
+                            d3.select(this)
+                                .transition()
+                                .duration(200)
+                                .attr('opacity', 1)
+                            svg.append('g').selectAll('svg')
+                                .data([1])
+                                .enter()
+                                .append('circle')
+                                .attr('cx', width/2)
+                                .attr('cy', height/2)
+                                .attr('r', 5)
+                                .attr('fill', 'orange')
+                                .attr('opacity', 0)
+                                .transition()
+                                .ease(d3.easeQuadIn)
+                                .duration(1000)
+                                .attr('opacity', 0.5)
+                                .attr('r', 12)
+                                .transition(500)
+                                .ease(d3.easeQuadOut)
+                                .attr('opacity', 0)
+                                .on('end', repeatCircle);
+                            // d3.select(this)
+                            //     .transition()
+                            //     .duration(1000)
+                            //     .attr('opacity', 1);
+                        });
+                }
+
+                function repeatCircle(d) {
+                    console.log('newCircle');
+                    d3.select(this)
+                    .attr('r', 5)
+                    .transition()
+                    .ease(d3.easeQuadIn)
+                    .duration(1000)
+                    .attr('opacity', 0.5)
+                    .attr('r', 12)
+                    .transition()
+                    .ease(d3.easeQuadOut)
+                    .duration(500)
+                    .attr('opacity', 0)
+                    .on('end', repeatCircle);
+                    toggleWuhanCircleR = !toggleWuhanCircleR;
+                }
+            });
         
         g
         .transition()
         .duration(0)
         .attr('transform-origin', 'center')
-        .attr('transform', transforms + ' translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+        .attr('transform', 'translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+
+        const foreign = svg.append('foreignObject')
+            .attr('width', 50)
+            .attr('height', 50)
+            .attr('x', width/2 - 25)
+            .attr('y', height/2 - 25);
+        foreign.append('xhtml:div')
+            .append('div')
+            .attr('x', 25)
+            .attr('y', 25)
+            .attr('width', 50)
+            .attr('height', 50)
+            .append('i')
+            .attr('x', 25)
+            .attr('y', 25)
+            .style('color', 'white')
+            .style('font-size', '50px')
+            .attr('class', 'fas fa-plane');
+        
 
         // g.data(newMapInfo)
         // .transition()
@@ -122,15 +212,22 @@ d3.json("world.json")
         //     console.log('test?');
         //     return transforms + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'});
 
-        // const testCenter = svg.append('g').selectAll('svg')
-        //     .data([center])
-        //     .enter()
-        //     .append("rect")
-        //     .attr("width", 10)
-        //     .attr("height", 10)
-        //     .attr('fill', 'blue')
-        //     .attr('x' ,  d => width/2 - 5)
-        //     .attr('y' ,  d => height/2 - 5);
+        const testCenter = svg.append('g').selectAll('svg')
+            .data([center])
+            .enter()
+            .append("rect")
+            .attr("width", 10)
+            .attr("height", 10)
+            .attr('fill', 'blue')
+            .attr('x' ,  d => width/2 - 5)
+            .attr('y' ,  d => height/2 - 5)
+            .on('click', function(d, i) {
+                console.log(projection([i.lon, i.lat])[0]);
+                g.transition()
+                .duration(2000)
+                .attr('transform-origin', 'center')
+                .attr('transform', 'scale(1)');
+            });
             // .attr('x' ,  d => projection([d[0], d[1]])[0])
             // .attr('y' ,  d => projection([d[0], d[1]])[1]);
 }); 
