@@ -21,7 +21,7 @@ p {
 
 #container {
     width: 100%;
-    height: 1900vh;
+    height: 1800vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -78,8 +78,8 @@ g {
     bottom: 0;
 }
 
-svg {
-    /* z-index: -1; */
+.svgG {
+    z-index: -1;
     position: fixed;
     left: 0;
     top: 0;
@@ -111,8 +111,8 @@ svg {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 5%;
-    box-sizing: border-box;
+    /* padding: 5%;
+    box-sizing: border-box; */
 }
 
 .big {
@@ -160,9 +160,9 @@ svg {
     box-sizing: border-box;
 }
 
-.double-statistics-container {
+.vertical-statistics-container {
     width: 100%;
-    height: 200vh;
+    height: 100vh;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -181,4 +181,82 @@ foreignObject {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+foreignObject svg{
+    /* transform: rotate(-30deg); */
+}
+
+/* @keyframes plane {
+    from {
+        transform: rotate(-30deg);
+    }
+    to {
+        transform: rotate(30deg);
+    }
+} */
+
+.timespan {
+    color: blue;
+}
+
+video {
+    width: 60%;
+}
+
+.tooltip-statistics-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 5%;
+    box-sizing: border-box;   
+}
+
+.domain {
+    stroke: red;
+}
+
+.tick line {
+    stroke: red;
+}
+
+.tick text {
+    fill: red;
+}
+
+
+canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.globe-3d {
+    position: relative;
+}
+
+#globe {
+    cursor: move;
+}
+
+#current {
+    position: absolute;
+    left: 0;
+    top: 20%;
+    font-family: sans-serif;
+    color: blue;
+}
+
+#percent {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    font-family: sans-serif;
+    color: yellow;
+}
+
+p {
+    color: white;
 }
