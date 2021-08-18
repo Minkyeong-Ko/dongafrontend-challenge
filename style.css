@@ -39,48 +39,10 @@ g {
 }
 
 .country {
-    /* fill: #666873; */
     stroke: #696969;
-    /* color: #66687375; */
-    /* stroke: white; */
     stroke-width: 0.1px;
     stroke-linecap: round;
     stroke-linejoin: round;
-    /* fill: transparent;
-    stroke: transparent; */
-}
-
-.lt {
-    width: 50%;
-    height: 50%;
-    background-color: skyblue;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-.rt {
-    width: 50%;
-    height: 50%;
-    background-color: lightpink;
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-.lb {
-    width: 50%;
-    height: 50%;
-    background-color: lightgoldenrodyellow;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-}
-.rb {
-    width: 50%;
-    height: 50%;
-    background-color: lightgreen;
-    position: absolute;
-    right: 0;
-    bottom: 0;
 }
 
 .svgG {
@@ -90,7 +52,6 @@ g {
     top: 0;
     overflow: visible;
 }
-
 
 .title-container {
     width: 100%;
@@ -108,18 +69,12 @@ g {
     text-align: right;
 }
 
-.red-text {
-    /* color: red; */
-}
-
 .center-container {
     width: 100%;
     height: 200vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* padding: 5%;
-    box-sizing: border-box; */
 }
 
 .big {
@@ -161,7 +116,6 @@ g {
     position: absolute;
     font-size: 15px;
     width: 40%;
-    /* height: 15%; */
     margin-right: 5%;
     padding-top: 1rem;
     padding-bottom: 1rem;
@@ -204,11 +158,6 @@ g {
     align-items: center;
     flex-direction: column;
     margin-top: 50vh;
-    /* padding: 5%;
-    box-sizing: border-box; */
-
-    /* position: sticky;
-    top: 0; */
 }
 
 svg image {
@@ -222,19 +171,6 @@ foreignObject {
     justify-content: center;
     align-items: center;
 }
-
-foreignObject svg{
-    /* transform: rotate(-30deg); */
-}
-
-/* @keyframes plane {
-    from {
-        transform: rotate(-30deg);
-    }
-    to {
-        transform: rotate(30deg);
-    }
-} */
 
 .timespan {
     color: blue;
@@ -302,11 +238,6 @@ canvas {
     color: rgb(0, 193, 0);
 }
 
-p {
-    /* color: rgba(245, 245, 245, 0.307);
-    color: white; */
-}
-
 #underline {
     z-index: -1;
     position: absolute;
@@ -332,7 +263,6 @@ p {
     background-color: red;
     width: 10px;
     height: 3rem;
-    /* animation: distanceLeft 1s ease-in-out forwards; */
 }
 
 .middleLine {
@@ -340,22 +270,12 @@ p {
     height: 1px;
     background-color: red;
     position: absolute;
-    /* animation: distanceLine 1s ease-in-out forwards; */
 }
 
 .rightBox {
     background-color: red;
     width: 10px;
     height: 3rem;
-    /* animation: distanceRight 1s ease-in-out forwards; */
-}
-
-.leftText {
-    /* animation: distanceLeftText 1s ease-in-out forwards; */
-}
-
-.rightText {
-    /* animation: distanceRightText 1s ease-in-out forwards; */
 }
 
 .last {
@@ -367,6 +287,7 @@ p {
     flex-direction: column;
 }
 
+/* 거리두기 animation */
 @keyframes distanceLeft {
     to {
         transform: translateX(-100px);
@@ -421,10 +342,6 @@ p {
     height: 3px;
     background-color: rgba(0, 0, 0, 0.774);
 }
-
-/* .firstCenterText {
-    
-} */
 
 @keyframes show-text {
     from {

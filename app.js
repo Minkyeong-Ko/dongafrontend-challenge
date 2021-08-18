@@ -3,6 +3,7 @@ const height = window.innerHeight;
 
 const svg = d3.select('div').append('svg').attr('width', width).attr('height', height).attr('cursor', 'pointer').attr('class', 'svgG');
 
+// 이동할 나라들
 const mapInfo = [
     {
         "name":"South Korea",
@@ -21,252 +22,14 @@ const mapInfo = [
     }
 ];
 
+// 한국만
 const newMapInfo = {
     "name":"South Korea",
     "lat" : "37.532600",
     "lon" : "127.024612"
 };
 
-var checkOnce = true;
-
-// d3.json("world.json")
-//     .then(data => {
-//         const worldMap = data;
-//         const geojson = topojson.feature(worldMap, worldMap.objects.countries);
-//         const center = d3.geoCentroid(geojson);
-//         // console.log(center);
-
-//         const korea = geojson.features.find(element => element.id === '410');
-
-//         const projection = d3.geoMercator()
-//             .scale(1)
-//             .translate([0, 0]);
-
-//         const path = d3.geoPath(projection);
-
-//         const g = svg.append('g').attr('class', 'mapg');
-//         const bounds = path.bounds(geojson);
-//         const widthScale = (bounds[1][0] - bounds[0][0]) / width; 
-//         const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
-//         const scale = 1 /Math.max(widthScale, heightScale); //축척
-//         const xoffset = width/2 - scale * (bounds[1][0] + bounds[0][0])/2; 
-//         const yoffset = height/2 - scale * (bounds[1][1] + bounds[0][1])/2; 
-//         const offset = [xoffset, yoffset];
-//         projection.scale(scale).translate(offset);
-//         // console.log(scale, offset);
-
-//         var toggleKoreaFillColor = false;
-//         var toggleWuhanCircleR = false;
-
-//         g
-//         .selectAll('path').data(geojson.features)
-//         .enter().append('path')
-//         .attr('class', 'country')
-//         .attr('d', path)
-//         .transition()
-//         .duration(2000)
-//         .style('fill', d => {
-//             toggleKoreaFillColor = !toggleKoreaFillColor;
-//             if (d.id === '410') {
-//                 return 'red';
-//             }
-//             else return 'transparent';
-//         })
-//         .style('stroke', d => {
-//             if (d.id === '410') {
-//                 return 'red';
-//             }
-//         })
-//         .on('end', repeat);
-
-//         function repeat(d) {
-//             if (d.id === '410') {
-//                 d3.select(this)
-//                 .transition()
-//                 .duration(2000)
-//                 .style('fill', toggleKoreaFillColor ? 'transparent' : 'red')
-//                 .style('stroke', toggleKoreaFillColor ? null : 'red')
-//                 .on('end', repeat);
-//                 toggleKoreaFillColor = !toggleKoreaFillColor;
-//             }
-//         }
-
-//         g.transition().style('background-color', 'blue');
-
-//         const cur_brower = browserCheck();
-//         const transforms = cur_brower === 'Chrome' ? '' : 'translate(' + -width*7 + ',' + -height*7 + ') scale(15)';
-
-//         const icons = svg.append('g').selectAll('svg')
-//             .data(mapInfo)
-//             .enter()  
-//             .append("rect")
-//             .attr("width", 10)
-//             .attr("height", 10)
-//             .attr('fill', 'green')
-//             .attr('x' ,  d => projection([d.lon, d.lat])[0])
-//             .attr('y' ,  d => projection([d.lon, d.lat])[1])
-//             .attr('opacity', 1)
-//             .on('click', function(d, i) {
-//                 // 여기서 plane append 해보기
-//                 // const testplane = div2.append('i')
-//                 //     .attr('x', 25)
-//                 //     .attr('y', 25)
-//                 //     .style('color', 'white')
-//                 //     .style('font-size', '50px')
-//                 //     .attr('class', 'fas fa-plane')
-//                 //     .style('transform', 'rotate(-30deg)');
-//                 // testplane.transition()
-//                 //     .style('color', 'yellow');
-
-//                 if (checkOnce) {
-//                     const foreign = svg.append('foreignObject')
-//                         .attr('width', 50)
-//                         .attr('height', 50)
-//                         .attr('x', width/2 - 25)
-//                         .attr('y', height/2 - 25)
-//                         .attr('fill', 'red');
-//                     const div1 = foreign.append('xhtml:div');
-//                     const div2 = div1.append('div')
-//                         .attr('x', 25)
-//                         .attr('y', 25)
-//                         .attr('width', 50)
-//                         .attr('height', 50);
-                    
-//                     const plane = div2.append('i');
-//                     plane.attr('x', 25)
-//                         .attr('y', 25)
-//                         .style('color', 'white')
-//                         .style('font-size', '20px')
-//                         .attr('class', 'fas fa-plane');
-                    
-//                     foreign.transition()
-//                         .duration(1000)
-//                         .style('transform-origin', 'center')
-//                         .attr('transform', 'rotate(30)');
-//                     checkOnce = false;
-//                 }
-
-//                 var zoomLevel = 15;
-//                 var multiplyLevel = 7;
-//                 if (i.name === 'China') {
-//                     zoomLevel = 10;
-//                     multiplyLevel = 4.5;
-//                 }
-//                 // console.log(projection([i.lon, i.lat])[0]);
-
-//                 // foreign.transition()
-//                 // .duration(2000)
-//                 // .ease(d3.easeLinear)
-//                 // .attr('transform-origin', 'center')
-//                 // .attr('transform', 'rotate(30)')
-//                 // .transition()
-//                 // .duration(0)
-//                 // .attr('transform', 'rotate(-30)');
-
-
-
-
-//                 g.transition()
-//                 .duration(2000)
-//                 .attr('transform-origin', 'center')
-//                 .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*multiplyLevel + ',' + -height*multiplyLevel + ') scale(' + zoomLevel + ')' + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')') : ('scale(' + zoomLevel + ') translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'));
-
-//                 if (i.name === 'Wuhan') {
-//                     svg.append('g').selectAll('svg')
-//                         .data([0])
-//                         .enter()
-//                         .append('circle')
-//                         .attr('cx', width/2)
-//                         .attr('cy', height/2)
-//                         .attr('r', 5)
-//                         .attr('fill', 'orange')
-//                         .attr('opacity', 0)
-//                         .on('click', function() {
-//                             toggleWuhanCircleR = !toggleWuhanCircleR;
-//                             console.log('clicked');
-//                             d3.select(this)
-//                                 .transition()
-//                                 .duration(200)
-//                                 .attr('opacity', 1)
-//                             svg.append('g').selectAll('svg')
-//                                 .data([1])
-//                                 .enter()
-//                                 .append('circle')
-//                                 .attr('cx', width/2)
-//                                 .attr('cy', height/2)
-//                                 .attr('r', 5)
-//                                 .attr('fill', 'orange')
-//                                 .attr('opacity', 0)
-//                                 .transition()
-//                                 .ease(d3.easeQuadIn)
-//                                 .duration(1000)
-//                                 .attr('opacity', 0.5)
-//                                 .attr('r', 12)
-//                                 .transition(500)
-//                                 .ease(d3.easeQuadOut)
-//                                 .attr('opacity', 0)
-//                                 .on('end', repeatCircle);
-//                             // d3.select(this)
-//                             //     .transition()
-//                             //     .duration(1000)
-//                             //     .attr('opacity', 1);
-//                         });
-//                 }
-
-//                 function repeatCircle(d) {
-//                     // console.log('newCircle');
-//                     d3.select(this)
-//                     .attr('r', 5)
-//                     .transition()
-//                     .ease(d3.easeQuadIn)
-//                     .duration(1000)
-//                     .attr('opacity', 0.5)
-//                     .attr('r', 12)
-//                     .transition()
-//                     .ease(d3.easeQuadOut)
-//                     .duration(500)
-//                     .attr('opacity', 0)
-//                     .on('end', repeatCircle);
-//                     toggleWuhanCircleR = !toggleWuhanCircleR;
-//                 }
-//             });
-        
-//         g
-//         .transition()
-//         .duration(3000)
-//         .ease(d3.easePolyInOut)
-//         .attr('transform-origin', 'center')
-//         .attr('transform', 'scale(15) translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
-        
-
-//         // g.data(newMapInfo)
-//         // .transition()
-//         // .duration(2000)
-//         // .attr('transform-origin', 'center')
-//         // .attr('transform', function(d, i) {
-//         //     console.log('test?');
-//         //     return transforms + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'});
-
-//         const testCenter = svg.append('g').selectAll('svg')
-//             .data([center])
-//             .enter()
-//             .append("rect")
-//             .attr("width", 10)
-//             .attr("height", 10)
-//             .attr('fill', 'blue')
-//             .attr('x' ,  d => width/2 - 5)
-//             .attr('y' ,  d => height/2 - 5)
-//             .on('click', function(d, i) {
-//                 // console.log(projection([i.lon, i.lat])[0]);
-//                 g.transition()
-//                 .duration(2000)
-//                 .attr('transform-origin', 'center')
-//                 .attr('transform', 'scale(1)');
-//             });
-//             // .attr('x' ,  d => projection([d[0], d[1]])[0])
-//             // .attr('y' ,  d => projection([d[0], d[1]])[1]);
-// }); 
-
+// 브라우저 체크
 function browserCheck(){ 
 	const agt = navigator.userAgent.toLowerCase(); 
 	if (agt.indexOf("chrome") != -1) return 'Chrome'; 
@@ -293,17 +56,19 @@ function browserCheck(){
 	} 
 }
 
-
+// 확진자 수 세로 차트
 const verticalBarGraph = d3.select('.vertical-statistics-container')
     .append('svg')
     .attr('width', width*2)
     .attr('height', height);
 
+// 기준선 만들기
 var lines_g = verticalBarGraph.selectAll('g')
     .data([0, 1, 5, 10, 15, 20])
     .enter()
     .append('g');
 
+// 데이터에 따라 높이 조절
 var lines = lines_g
     .append('line')
     .attr('x1', 200)
@@ -319,6 +84,7 @@ lines_g.append('text')
     .attr('fill', '#666873')
     .text(function(d) {return d + '만 명';})
 
+// 내려올 bar 생성
 const bar = verticalBarGraph.append('rect')
   .attr('width', width/2)
   .attr('height', 5)
@@ -326,8 +92,7 @@ const bar = verticalBarGraph.append('rect')
   .attr('y', 200)
   .attr('fill', 'rgba(255, 0, 0, 0.801)');
 
-
-
+// 정보 텍스트
 const bottomText = verticalBarGraph.append('text')
             .text('2021년 8월 2일 0시 기준 20만1002명')
             .attr('x', width)
@@ -336,6 +101,8 @@ const bottomText = verticalBarGraph.append('text')
             .style('font-size', '1rem')
             .style('opacity', 0)
             .attr('fill', '#666873');
+
+// 버튼 생성
 var toggleBtn = false;
 const btn = verticalBarGraph
     .append('g')
@@ -399,21 +166,22 @@ btnRect.on('mouseover', function() {
     .attr('stroke', 'white');
   })
 
-  btnT.on('mouseover', function() {
+btnT.on('mouseover', function() {
+  btnRect
+  .transition()
+  .duration(200)
+  .attr('stroke-width', 5)
+  .attr('stroke', 'rgba(255, 0, 0, 0.801)');
+})
+  .on('mouseleave', function() {
     btnRect
     .transition()
     .duration(200)
-    .attr('stroke-width', 5)
-    .attr('stroke', 'rgba(255, 0, 0, 0.801)');
-  })
-    .on('mouseleave', function() {
-      btnRect
-      .transition()
-      .duration(200)
-      .attr('stroke-width', 1)
-      .attr('stroke', 'white');
-    })
+    .attr('stroke-width', 1)
+    .attr('stroke', 'white');
+  });
 
+// 시간 흐름(tween으로 만들어야 한다)
 const timepass = verticalBarGraph.append('g');
 const timepassRect = timepass.append('rect')
     .attr('x', width*2-200)
@@ -429,42 +197,32 @@ timepass.append('text')
     .style('font-size', 15)
     .style('fill', 'white')
     .text('2020년 1월 20일 ~ 2021년 8월 2일');
-    // .transition()
-    // .duration(5000)
-    // .tween('text', function() {
-    //     // return d3.interpolateNumber(0, 31);
-    //     var dates = [31, 30, 28, 29];
-    //     var year = d3.interpolateRound(2020, 2021);
-    //     return function(t) {
-    //         d3.select(this).text(year(t) + '년');
-    //     }
-    // });
 
-const monthText = timepass.append('text')
-  .text(0)
-  .attr('x', width*2 - 50)
-  .attr('y', 35)
-  .attr('text-anchor', 'end')
-  .style('font-size', 15);
 
-monthText.call(tweenMonth);
+// const monthText = timepass.append('text')
+//   .text(0)
+//   .attr('x', width*2 - 50)
+//   .attr('y', 35)
+//   .attr('text-anchor', 'end')
+//   .style('font-size', 15);
 
-function tweenMonth() {
-  monthText
-    .transition()
-    .duration(3000)
-    .tween('text', function() {
-        // return d3.interpolateNumber(0, 31);
-        var dates = [31, 30, 28, 29];
-        var month = d3.interpolateRound(1, 12);
-        return function(t) {
-            d3.select(this).text(month(t) + '월');
-        }
-    })
-    .on('end', function() {
-      tweenMonth();
-    });
-}
+// monthText.call(tweenMonth);
+
+// function tweenMonth() {
+//   monthText
+//     .transition()
+//     .duration(3000)
+//     .tween('text', function() {
+//         var dates = [31, 30, 28, 29];
+//         var month = d3.interpolateRound(1, 12);
+//         return function(t) {
+//             d3.select(this).text(month(t) + '월');
+//         }
+//     })
+//     .on('end', function() {
+//       tweenMonth();
+//     });
+// }
 
 // const dayText = timepass.append('text')
 //     .text(0)
@@ -505,16 +263,11 @@ function tweenMonth() {
 
 
 
-
-
-
-// EXAMPLE CODE
-// set the dimensions and margins of the graph
+// Line 차트 생성
 var margin = {top: 10, right: 30, bottom: 30, left: 60},
     w = width*1.5 - margin.left - margin.right,
     h = height*0.5 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
 var svg_t = d3.select(".tooltip-statistics-container")
   .append("svg")
     .attr("width", w + margin.left + margin.right)
@@ -525,31 +278,21 @@ var svg_tooltip = svg_t
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-//Read the data
 d3.csv("accum.csv")
-  // When reading the csv, I must format variables:
   .then(
-// function(d){
-//     return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value }
-//   },
-
-  // Now I can use this dataset:
   function(data) {
-    // Add X axis --> it is a date format
+    // X축
     var x = d3.scaleTime()
       .domain(d3.extent(data, function(d) { 
-        // const parseTimeFull = d3.timeParse("%m/%d/%y");
         return d3.timeParse("%m/%d/%y")(d.date); 
-        // console.log(parseTimeFull(d.date));
-        // return parseTimeFull(d.date);
     }))
       .range([ 0, w ]);
 
-        svg_tooltip.append("g")
-        .attr("transform", "translate(0," + h + ")")
-        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b")));
+    svg_tooltip.append("g")
+      .attr("transform", "translate(0," + h + ")")
+      .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b")));
 
-    // Add Y axis
+    // Y축
     var test = 0;
     var y = d3.scaleLinear()
       .domain([0, d3.max(data, function(d) { 
@@ -557,8 +300,8 @@ d3.csv("accum.csv")
           return +(test.toString()); 
         })])
       .range([ h, 0 ]);
-    svg_tooltip.append("g")
 
+    svg_tooltip.append("g")
       .call(d3.axisLeft(y));
 
     // Add the line
@@ -570,8 +313,6 @@ d3.csv("accum.csv")
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
         .x(function(d) { 
-            // const parseTimeFull = d3.timeParse("%m/%d/%y");
-            // return x(parseTimeFull(d.date));
             return x(d3.timeParse("%m/%d/%y")(d.date)) 
         })
         .y(function(d) { 
@@ -580,172 +321,12 @@ d3.csv("accum.csv")
         )
     );
 
-    const tooltipLine = svg_t.append('line')
-    .attr('x1', width)
-    .attr('y1', 0)
-    .attr('x2', width)
-    .attr('y2', h)
-    .style('stroke', 'transparent')
-    .style('stroke-width', 0.3);
-
-    const tooltip = svg_t.append('g');
-    // svg_t.on('touchmove mousemove click', function(e) {
-    //     console.log('hovered?');
-    //     const date1 = x.invert(d3.pointer(e, this)[0]);
-    //     const parseTime = d3.timeFormat("%_m/%_d/%Y");
-    //     const new_date1 = parseTime(date1);
-    //     console.log(new_date1.replace(/\s/g,''));
-    //     const bisect = d3.bisector(function(d) {
-    //         return d.date;
-    //     }).left;
-    //     const index = bisect(data, new_date1.replace(/\s/g,''));
-    //     console.log(index);
-    //     const a = data[index - 1];
-    //     const b = data[index];
-    //     console.log(a);
-    //     console.log(b);
-    //     const {date, number, domestic, foreign, death} = b && (date1 - a.date > b.date - date1) ? b : a;
-    //     console.log(date, number, domestic, foreign, death);
-    // });
-
     })
     .catch( function(err) {console.log(err)});
 
-// svg.on("touchend mouseleave", () => tooltip.call(callout, null));
-
-// // example line chart with tooltips
-// var margin = { top: 30, right: 120, bottom: 30, left: 50 },
-//     w = 960 - margin.left - margin.right,
-//     h = 500 - margin.top - margin.bottom,
-//     tooltip = { width: 100, height: 100, x: 10, y: -30 };
-// //이건 위치랑 크기 조정하는 것 같고
-
-// var parseDate = d3.timeParse("%m/%e/%Y"),
-//     bisectDate = d3.bisector(function(d) { return d.date; }).left,
-//     formatValue = d3.format(","),
-//     dateFormatter = d3.timeParse("%m/%d/%y");
-// //이거는 아직 잘 모르겠고
-
-// var x = d3.scaleTime()
-//         .range([0, w]);
-// // 시간 폭 지정하는 듯
-
-// var y = d3.scaleLinear()
-//         .range([h, 0]);
-// // 이거는 그냥 세로 지정?
-
-// var xAxis = d3.axisBottom(x)
-//     .tickFormat(dateFormatter);
-// // ?
-
-// var yAxis = d3.axisLeft(y)
-//     .tickFormat(d3.format("s"))
-// // ?
-
-// var line = d3.line()
-//     .x(function(d) { return x(d.date); })
-//     .y(function(d) { return y(d.likes); });
-
-// var svgTooltip = d3.select(".tooltip-statistics-container").append("svg")
-//     .attr("width", w + margin.left + margin.right)
-//     .attr("height", h + margin.top + margin.bottom)
-//     .append("g")
-//     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-// // svg 생성
-
-// d3.tsv("data.tsv")
-//     .then(function(data) {
-
-//     data.forEach(function(d) {
-//         d.date = parseDate(d.date);
-//         d.likes = +d.likes;
-//     });
-
-//     data.sort(function(a, b) {
-//         return a.date - b.date;
-//     });
-
-//     x.domain([data[0].date, data[data.length - 1].date]);
-//     y.domain(d3.extent(data, function(d) { return d.likes; }));
-
-//     svgTooltip.append("g")
-//         .attr("class", "x axis")
-//         .attr("transform", "translate(0," + h + ")")
-//         .call(xAxis);
-
-//     svgTooltip.append("g")
-//         .attr("class", "y axis")
-//         .call(yAxis)
-//         .append("text")
-//         .attr("transform", "rotate(-90)")
-//         .attr("y", 6)
-//         .attr("dy", ".71em")
-//         .style("text-anchor", "end")
-//         .text("Number of Likes");
-
-//     svgTooltip.append("path")
-//         .datum(data)
-//         .attr("class", "line")
-//         .attr("d", line);
-
-//     var focus = svgTooltip.append("g")
-//         .attr("class", "focus")
-//         .style("display", "none");
-
-//     focus.append("circle")
-//         .attr("r", 5);
-
-//     focus.append("rect")
-//         .attr("class", "tooltip")
-//         .attr("width", 100)
-//         .attr("height", 50)
-//         .attr("x", 10)
-//         .attr("y", -22)
-//         .attr("rx", 4)
-//         .attr("ry", 4);
-
-//     focus.append("text")
-//         .attr("class", "tooltip-date")
-//         .attr("x", 18)
-//         .attr("y", -2);
-
-//     focus.append("text")
-//         .attr("x", 18)
-//         .attr("y", 18)
-//         .text("Likes:");
-
-//     focus.append("text")
-//         .attr("class", "tooltip-likes")
-//         .attr("x", 60)
-//         .attr("y", 18);
-
-//     svgTooltip.append("rect")
-//         .attr("class", "overlay")
-//         .attr("width", w)
-//         .attr("height", h)
-//         .on("mouseover", function() { focus.style("display", null); })
-//         .on("mouseout", function() { focus.style("display", "none"); })
-//         .on("mousemove", mousemove);
-
-//     function mousemove() {
-//         var x0 = x.invert(d3.pointer(this)[0]),
-//             i = bisectDate(data, x0, 1),
-//             d0 = data[i - 1],
-//             d1 = data[i],
-//             d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-//         focus.attr("transform", "translate(" + x(d.date) + "," + y(d.likes) + ")");
-//         focus.select(".tooltip-date").text(dateFormatter(d.date));
-//         focus.select(".tooltip-likes").text(formatValue(d.likes));
-//     }
-// })
-//     .catch(function(error) {
-//         if (error) throw error;
-//     });
-
-
-
 
 // 3D GLOBE EXAMPLE CODE
+// 참고: https://jorin.me/d3-canvas-globe-hover/
 
 //
 // Configuration
@@ -759,12 +340,12 @@ var scaleFactor = 0.65
 var degPerSec = 6
 // start angles
 var angles = { x: -20, y: 40, z: 0}
-// colors
+
+// 색상 설정
 var colorWater = 'black'
 var colorLand = 'white'
 var colorGraticule = 'darkgray'
 var colorCountry = 'rgb(0, 193, 0)'
-
 var currentPercent = d3.select('#percent');
 
 
@@ -776,8 +357,7 @@ function enter(country) {
   var country = countryList.find(function(c) {
     return parseInt(c.id, 10) === parseInt(country.id, 10)
   })
-  console.log('enter, get country: ');
-  console.log(country);
+  // 데이터 가지고 마우스 위치에 따라 텍스트 내용 변경
   current.transition()
     .duration(50)
     .attr('opacity', 0)
@@ -795,6 +375,7 @@ function enter(country) {
     .attr('opacity', 1);
 }
 
+// 텍스트 초기화
 function leave(country) {
   current.transition()
   .duration(500).text('')
@@ -857,7 +438,6 @@ function stopRotation() {
 function dragstarted(e) {
   console.log('dragstarted');
   v0 = versor.cartesian(projection.invert(d3.pointer(e, this)));
-  // v0 = versor.cartesian(projection.invert(d3.pointer(this)));
   r0 = projection.rotate()
   q0 = versor(r0)
   stopRotation()
@@ -913,29 +493,15 @@ function rotate(elapsed) {
   lastTime = now
 }
 
-// function loadData(cb) {
-//   d3.json('https://unpkg.com/world-atlas@1/world/110m.json', function(error, world) {
-//     if (error) throw error
-//     d3.tsv('https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/world-country-names.tsv', function(error, countries) {
-//       if (error) throw error
-//       cb(world, countries)
-//     })
-//   })
-// }
-
 function loadData(cb) {
     console.log('loadData');
     d3.json('https://unpkg.com/world-atlas@1/world/110m.json')
         .then(function(world) {
-            // d3.tsv('vaccinated_full.tsv')
+            // 세계 접종률 데이터 가져오기
             d3.csv('percent_noworld.csv')
                 .then(function(countries) {
                     cb(world, countries);
                 })
-            // d3.tsv('fullyVaccinated.tsv')
-            // .then(function(countries) {
-            //     cb(world, countries);
-            // })
   });          
 }
 
@@ -958,9 +524,6 @@ function polygonContains(polygon, point) {
 function mousemove(e) {
   console.log('mousemove');
   var c = getCountry(e);
-  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!');
-  console.log(c);
-  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!');
   if (!c) {
     if (currentCountry) {
       leave(currentCountry);
@@ -978,7 +541,6 @@ function mousemove(e) {
 }
 
 function getCountry(event) {
-  console.log('getCountry');
   var pos = projection.invert(d3.pointer(event))
   console.log(pos);
   return countries.features.find(function(f) {
@@ -1055,9 +617,9 @@ d3.json('korea.json')
       const offset = [xoffset, yoffset];
       k_projection.scale(scale).translate(offset);
 
+      // 확진자 수에 따른 색상 조정
       const colorScale = d3.scaleLinear().domain([0, 10000, 50000, 100000])
       .range(['white', 'rgb(255, 100, 100)', 'rgb(255, 50, 50)']);
-          // .range(['white', 'rgb(0, 128, 255)', 'rgb(0, 76, 255)']);
 
       g
         .selectAll('path')
@@ -1066,24 +628,19 @@ d3.json('korea.json')
         .attr('class', 'province')
         .attr('id', dta => 'id' + dta.properties.code)
         .attr('d', mappath)
-        .attr('fill', 'orange')   //나중에 colorScale 만들기
         .attr('stroke', 'transparent')
         .attr('fill', function(d) {
-          console.log(d);
           const temp_fill = infoData.find(dta => dta.code === d.properties.code);
-          console.log(parseInt(temp_fill.sum.replace(',', ''), 10));
-          console.log(colorScale(parseInt(temp_fill.sum.replace(',', ''), 10)));
           return colorScale(parseInt(temp_fill.sum.replace(',', ''), 10));
         })
         .on('mouseover', mouseOver)
         .on('mouseleave', mouseLeave);
 
+      // 서울 맨 위로 보내기(경기도에 가려짐)
       const seoul = d3.select('.korea-map').select('svg').select('g').select('#id11').attr('fill', 'red');
-      console.log('================');
-      console.log(seoul.node().parentNode);
-      console.log('================');
       seoul.node().parentNode.appendChild(seoul.node());
 
+      // 지역
       var currentText = d3.select('.korea-map').append('text')
         .text('')
         .attr('x', 100)
@@ -1095,6 +652,7 @@ d3.json('korea.json')
         .style('font-weight', 'bold')
         .attr('class', 'kmapText1');
 
+      // 확진자 수
       var sumText = d3.select('.korea-map').append('text')
         .attr('x', 100)
         .attr('y', 80)
@@ -1105,6 +663,7 @@ d3.json('korea.json')
         .style('font-weight', 'bold')
         .attr('class', 'kmapText2');
       
+      // 등락
       var diffText = d3.select('.korea-map').append('text')
         .attr('x', 100)
         .attr('y', 120)
@@ -1117,13 +676,9 @@ d3.json('korea.json')
       function mouseOver(d, i) {
         this.parentNode.appendChild(this);//the path group is on the top with in its parent group
         d3.select(this).style('stroke', 'black');
-        // currentText.text(i.properties.name);
 
         const temp_text = infoData.find(d => d.code === i.properties.code);
         currentText.text(temp_text.area);
-        console.log(temp_text);
-        console.log(temp_text.sum)
-        console.log(temp_text.diff)
         sumText.text(temp_text.sum);
         diffText.text('+' + temp_text.diff);
       }
@@ -1139,6 +694,8 @@ d3.json('korea.json')
 });
 
 const screenHeight = window.innerHeight;
+
+// 한번만 수행하기 위해
 var okayToProceed1 = true;
 var okayToProceed1_1 =true;
 var okayToProceed2 = true;
@@ -1146,9 +703,7 @@ var okayToProceed3 = true;
 var okayToProceed4 = true;
 var okayToProceed5 = true;
 var okayToProceed6 = true;
-
 var okayToProceedFO = true;
-
 var okayToProceedLast = true;
 var okayToProceedHover = true;
 
@@ -1161,11 +716,11 @@ var repeatOn = true;
 
 var foreign, div1, div2, plane;
 
+
 var feverCon = document.querySelector('.fever');
 var redText2 = document.querySelector('.red-text2');
 var underline2 = document.createElement('div');
 underline2.setAttribute('id', 'underline2');
-// underline.style.width = redText.getClientRects()[0].width + 'px';
 underline2.style.top = window.scrollY + redText2.getClientRects()[0].y + redText2.getClientRects()[0].height - 5 + 'px';
 underline2.style.left = redText2.getClientRects()[0].x + 'px';
 feverCon.appendChild(underline2);
@@ -1178,38 +733,26 @@ window.addEventListener('wheel', function(e) {
     // 한국만 확대
     if (window.scrollY > 0 && window.scrollY < screenHeight) {
       document.querySelector('#iconArrow').style.opacity = 0;
-      
-      // gWRLD.transition()
-      //   .duration(2000)
-      //   .attr('transform-origin', 'center')
-      //   .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')' + ' translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : ('scale(' + 15 + ') translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')'));
     }
-
-    // if (window.scrollY > screenHeight && window.scrollY < screenHeight + screenHeight/2) {
-    //   document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.5s ease-in-out forwards';
-    // }
 
     if (window.scrollY > screenHeight + screenHeight/2 && window.scrollY < screenHeight*2 && e.deltaY > 0) {
       document.querySelector('.firstCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
 
       if (okayToProceed1) {
         okayToProceed1 = false;
-        console.log('turn gray');
         repeatOn = false;
         gWRLD.selectAll('path')
           .transition()
           .duration(1000)
           .style('stroke', '#66687375');
-          // .style('fill', '#666873');
+
         d3.select('#korea')
           .transition()
           .delay(500)
           .duration(1000)
           .style('fill', 'transparent')
           .style('stroke', '#66687375')
-          // .on('end', () => okayToProceed = true);
 
-        console.log('to China')
         gWRLD.transition()
           .duration(1000)
           .attr('transform-origin', 'center')
@@ -1221,18 +764,8 @@ window.addEventListener('wheel', function(e) {
       document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
     }
 
-    if (window.scrollY > screenHeight*2 && window.scrollY < screenHeight*3) {
-
-      
-    } 
-
-    // if (window.scrollY > screenHeight + 200) {
-    //   document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.5s ease-in-out forwards';
-    // }
-
     
     if (window.scrollY > screenHeight*3 - 300 && window.scrollY < screenHeight*4 && e.deltaY > 0) {
-      console.log('zoom wu');
       if (okayToProceed2) {
         okayToProceed2 = false;
         //1
@@ -1240,20 +773,15 @@ window.addEventListener('wheel', function(e) {
           {width: '0px'},
           {width: storyCons[0].children[0].children[0].getClientRects()[0].width + 'px'}
         ], {
-          // delay: 500,
           duration: 500,
           easing: 'ease-in-out',
           fill: 'forwards',
-          // interations: Infinity
         });
-
-      // this.setTimeout(() => okayToProceed = true, 2000)
 
       d3.select('#china')
         .transition()
         .style('stroke', '#6D7BA6');
 
-        console.log('wuhan circle');
       gWRLD.transition()
         .duration(1000)
         .attr('transform-origin', 'center')
@@ -1329,11 +857,9 @@ window.addEventListener('wheel', function(e) {
         {width: '0px'},
         {width: storyCons[1].children[0].children[0].getClientRects()[0].width + 'px'}
       ], {
-        // delay: 500,
         duration: 500,
         easing: 'ease-in-out',
         fill: 'forwards',
-        // interations: Infinity
       });
 
 
@@ -1376,7 +902,6 @@ window.addEventListener('wheel', function(e) {
       d3.select('#korea')
           .transition()
           .style('stroke', '#6D7BA6')
-      // .on('end', () => okayToProceed = true);
       }
     }
 
@@ -1392,7 +917,6 @@ window.addEventListener('wheel', function(e) {
           duration: 500,
           easing: 'ease-in-out',
           fill: 'forwards',
-          // interations: Infinity
         });
 
         //3
@@ -1400,11 +924,9 @@ window.addEventListener('wheel', function(e) {
           {width: '0px'},
           {width: storyCons[2].children[0].children[0].getClientRects()[0].width + 'px'}
         ], {
-          // delay: 500,
           duration: 500,
           easing: 'ease-in-out',
           fill: 'forwards',
-          // interations: Infinity
         });
     
 
@@ -1415,7 +937,6 @@ window.addEventListener('wheel', function(e) {
         d3.select('#korea')
           .transition()
           .style('stroke', 'red')
-          // .on('end', () => okayToProceed = true);
       }
     }
 
@@ -1427,15 +948,10 @@ window.addEventListener('wheel', function(e) {
           {width: '0px'},
           {width: storyCons[3].children[0].children[0].getClientRects()[0].width + 'px'}
         ], {
-          // delay: 500,
           duration: 500,
           easing: 'ease-in-out',
           fill: 'forwards',
-          // interations: Infinity
         });
-
-        
-          // .on('end', () => okayToProceed = true);
       }
     }
 
@@ -1447,14 +963,10 @@ window.addEventListener('wheel', function(e) {
         {width: '0px'},
         {width: storyCons[4].children[0].children[0].getClientRects()[0].width + 'px'}
       ], {
-        // delay: 500,
         duration: 500,
         easing: 'ease-in-out',
         fill: 'forwards',
-        // interations: Infinity
       });
-
-      // this.setTimeout(() => okayToProceed = false, 1000);
 
       console.log('corona - red');
       circle1
@@ -1638,10 +1150,6 @@ function basicSetting() {
 
 
 function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
-  console.log('........................');
-  console.log(gWRLD);
-  console.log(geojsonWRLD);
-  console.log('........................');
   // 지도 그리고 한국 배경 색 트랜지션 반복
   var toggleKoreaFillColor = false;
 
@@ -1663,7 +1171,6 @@ function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
       if (d.id === '410') {
           return '#F21905';
       }
-      // else return 'rgba(245, 245, 245, 0.1)';
   })
   .style('stroke', d => {
       if (d.id === '410') {
@@ -1689,7 +1196,6 @@ function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
   gWRLD.transition()
     .duration(2000)
     .attr('transform-origin', 'center')
-    // .attr('transform', 'scale(5)');
     .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : 'scale(15)  translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
 }
 
@@ -1708,7 +1214,6 @@ titleCon.animate([
 var redText1 = document.querySelector('.red-text1');
 var underline = document.createElement('div');
 underline.setAttribute('id', 'underline');
-// underline.style.width = redText.getClientRects()[0].width + 'px';
 underline.style.top = redText1.getClientRects()[0].y + redText1.getClientRects()[0].height + 'px';
 underline.style.left = redText1.getClientRects()[0].x + 'px';
 
@@ -1720,7 +1225,6 @@ underline.animate([
   duration: 500,
   easing: 'ease-in-out',
   fill: 'forwards',
-  // interations: Infinity
 });
 titleCon.appendChild(underline);
 
@@ -1730,11 +1234,9 @@ titleCon.appendChild(underline);
 
 for (let story of storyCons) {
   // black-story-text 줄긋기
-  // let blackText = document.querySelector('.black-story-text');
   let blackText = story.children[0].children[0];
   let underlineBlack = document.createElement('div');
   underlineBlack.setAttribute('id', 'underlineBlack');
-  // underline.style.width = redText.getClientRects()[0].width + 'px';
   underlineBlack.style.top = window.scrollY + blackText.getClientRects()[0].y + blackText.getClientRects()[0].height + 'px';
   underlineBlack.style.left = blackText.getClientRects()[0].x + 'px';
 
@@ -1758,11 +1260,15 @@ const tempCon = document.querySelector('.temp-container');
 const tempText = document.querySelector('.green-text');
 var tempRect = document.createElement('div');
 tempRect.setAttribute('id', 'tempRect');
-
-// tempRect.style.width = tempText.getClientRects()[0].width + 'px';
 tempRect.style.top = window.scrollY + tempText.getClientRects()[0].y + tempText.getClientRects()[0].height + 'px';
 tempRect.style.left = tempText.getClientRects()[0].x + 'px';
 
 
 
 tempCon.appendChild(tempRect);
+
+window.onload = function () {
+  setTimeout(function() {
+    scrollTo(0, 0)
+  }, 100);
+}
