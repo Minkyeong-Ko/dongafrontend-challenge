@@ -13,9 +13,10 @@
     <div id="container">
         <div class="title-container">
             <div class="title">
-                <p class="big">코로나19 국내 발생 <span class="red-text">1년 반</span>,</p>
+                <p class="big">코로나19 국내 발생 <span class="red-text red-text1">1년 반</span>,</p>
                 <p class="big">무슨 일이 있었나</p>
             </div>
+            <i class="fas fa-arrow-down" id="iconArrow"></i>
         </div>
         <div class="center-container">
             <p class="firstCenterText">
@@ -41,13 +42,13 @@
                 일본 여행을 가기 위해 인천에서 환승하는 일정이었다.</p>
             </div>
         </div>
-        <div class="story-container">
+        <div class="story-container fever">
             <div class="story">
                 <span class="black-story-text">월 19일 오후 12시 25분</span>
                 <p>
                     비행기에서 내린 A 씨가 인천공항 탑승동 게이트로 향했다.
                     <br>
-                    체온을 쟀는데 38.0도가 나왔다
+                    체온을 쟀는데 <span class="red-text red-text2">38.0도</span>가 나왔다
                     <br>
                     여기에 발열, 오한, 근육통, 콧물 증상이 있었다.
                     <br>
@@ -120,7 +121,7 @@
             <h3 id="percent">백신 접종률을 확인하세요.</h3>
             <canvas id="globe"></canvas>
         </div>
-        <div class="full-statistics-container">
+        <!-- <div class="full-statistics-container">
             <p>
                 8월 2일 기준
                 <br>
@@ -128,6 +129,11 @@
             </p>
             <p>
                 통계 그래프 - hover 효과
+            </p>
+        </div> -->
+        <div class="temp-container">
+            <p class="temp-center-text">
+                8월 2일 기준 우리나라의 백신접종률은 <span class="green-text">13.9%</span>다.
             </p>
         </div>
         <div class="full-statistics-container korea-map">
@@ -141,8 +147,8 @@
             </p> -->
         </div>
         <div class="last">
-            <p class="big">
-                마스크 착용, 
+            <p class="mask">
+                마스크 착용
             </p>
             <div class="social-distance-container">
                 <span class="big leftText">
@@ -158,7 +164,7 @@
                 </span>
             </div>
             
-            <p class="big">
+            <p class="lastText">
                 여전히 중요한 이유다.
             </p>
         </div>

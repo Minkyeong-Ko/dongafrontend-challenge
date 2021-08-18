@@ -299,13 +299,6 @@ const verticalBarGraph = d3.select('.vertical-statistics-container')
     .attr('width', width*2)
     .attr('height', height);
 
-const bar = verticalBarGraph.append('rect')
-    .attr('width', width/2)
-    .attr('height', 1)
-    .attr('x', width - width/4)
-    .attr('y', 200)
-    .attr('fill', 'rgba(255, 0, 0, 0.801)');
-
 var lines_g = verticalBarGraph.selectAll('g')
     .data([0, 1, 5, 10, 15, 20])
     .enter()
@@ -317,7 +310,7 @@ var lines = lines_g
     .attr('y1', d => 200 + d*(height-400)/20)
     .attr('x2', width*2 - 100)
     .attr('y2', d => 200 + d*(height-400)/20)
-    .attr('stroke', 'white');
+    .attr('stroke', '#666873');
 
 lines_g.append('text')
     .attr('x', 100)
@@ -325,6 +318,13 @@ lines_g.append('text')
     .attr('dy', '.35em')
     .attr('fill', '#666873')
     .text(function(d) {return d + '만 명';})
+
+const bar = verticalBarGraph.append('rect')
+  .attr('width', width/2)
+  .attr('height', 5)
+  .attr('x', width - width/4)
+  .attr('y', 200)
+  .attr('fill', 'rgba(255, 0, 0, 0.801)');
 
 
 
@@ -364,46 +364,81 @@ const btn = verticalBarGraph
     });
 
 const btnRect = btn.append('rect')
-    .attr('x', width-150)
+    .attr('x', width-100)
     .attr('y', 50)
-    .attr('width', 300)
+    .attr('width', 200)
     .attr('height',50)
-    .attr('fill', 'white')
+    .attr('fill', 'transparent')
+    .attr('stroke', 'white')
     .attr('rx', 25)
     .attr('ry', 25)
+    .attr('stroke-width', 1)
     .style('cursor', 'pointer');
 
-btn.append('text')
+const btnT = btn.append('text')
     .text('확진자 수 통계')
     .attr('x', width)
     .attr('y', 85)
     .attr('text-anchor', 'middle')
-    .style('font-size', 20);
+    .style('font-size', 20)
+    .style('fill', 'white')
+    .style('cursor', 'pointer');
+
+btnRect.on('mouseover', function() {
+  btnRect
+  .transition()
+  .duration(200)
+  .attr('stroke-width', 5)
+  .attr('stroke', 'rgba(255, 0, 0, 0.801)');
+})
+  .on('mouseleave', function() {
+    btnRect
+    .transition()
+    .duration(200)
+    .attr('stroke-width', 1)
+    .attr('stroke', 'white');
+  })
+
+  btnT.on('mouseover', function() {
+    btnRect
+    .transition()
+    .duration(200)
+    .attr('stroke-width', 5)
+    .attr('stroke', 'rgba(255, 0, 0, 0.801)');
+  })
+    .on('mouseleave', function() {
+      btnRect
+      .transition()
+      .duration(200)
+      .attr('stroke-width', 1)
+      .attr('stroke', 'white');
+    })
 
 const timepass = verticalBarGraph.append('g');
 const timepassRect = timepass.append('rect')
     .attr('x', width*2-200)
-    .attr('y', 0)
-    .attr('width', 200)
-    .attr('height', 50)
-    .attr('fill', 'white');
+    .attr('y', 50)
+    .attr('width', 300)
+    .attr('height', 50);
 
 timepass.append('text')
     .text(0)
     .attr('x', width*2 - 100)
-    .attr('y', 35)
+    .attr('y', 85)
     .attr('text-anchor', 'end')
     .style('font-size', 15)
-    .transition()
-    .duration(5000)
-    .tween('text', function() {
-        // return d3.interpolateNumber(0, 31);
-        var dates = [31, 30, 28, 29];
-        var year = d3.interpolateRound(2020, 2021);
-        return function(t) {
-            d3.select(this).text(year(t) + '년');
-        }
-    });
+    .style('fill', 'white')
+    .text('2020년 1월 20일 ~ 2021년 8월 2일');
+    // .transition()
+    // .duration(5000)
+    // .tween('text', function() {
+    //     // return d3.interpolateNumber(0, 31);
+    //     var dates = [31, 30, 28, 29];
+    //     var year = d3.interpolateRound(2020, 2021);
+    //     return function(t) {
+    //         d3.select(this).text(year(t) + '년');
+    //     }
+    // });
 
 const monthText = timepass.append('text')
   .text(0)
@@ -531,7 +566,7 @@ d3.csv("accum.csv")
     svg_tooltip.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#6D7BA6")
+      .attr("stroke", "rgba(255, 0, 0, 0.801")
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
         .x(function(d) { 
@@ -550,28 +585,28 @@ d3.csv("accum.csv")
     .attr('y1', 0)
     .attr('x2', width)
     .attr('y2', h)
-    .style('stroke', 'gray')
+    .style('stroke', 'transparent')
     .style('stroke-width', 0.3);
 
     const tooltip = svg_t.append('g');
-    svg_t.on('touchmove mousemove click', function(e) {
-        console.log('hovered?');
-        const date1 = x.invert(d3.pointer(e, this)[0]);
-        const parseTime = d3.timeFormat("%_m/%_d/%Y");
-        const new_date1 = parseTime(date1);
-        console.log(new_date1.replace(/\s/g,''));
-        const bisect = d3.bisector(function(d) {
-            return d.date;
-        }).left;
-        const index = bisect(data, new_date1.replace(/\s/g,''));
-        console.log(index);
-        const a = data[index - 1];
-        const b = data[index];
-        console.log(a);
-        console.log(b);
-        const {date, number, domestic, foreign, death} = b && (date1 - a.date > b.date - date1) ? b : a;
-        console.log(date, number, domestic, foreign, death);
-    });
+    // svg_t.on('touchmove mousemove click', function(e) {
+    //     console.log('hovered?');
+    //     const date1 = x.invert(d3.pointer(e, this)[0]);
+    //     const parseTime = d3.timeFormat("%_m/%_d/%Y");
+    //     const new_date1 = parseTime(date1);
+    //     console.log(new_date1.replace(/\s/g,''));
+    //     const bisect = d3.bisector(function(d) {
+    //         return d.date;
+    //     }).left;
+    //     const index = bisect(data, new_date1.replace(/\s/g,''));
+    //     console.log(index);
+    //     const a = data[index - 1];
+    //     const b = data[index];
+    //     console.log(a);
+    //     console.log(b);
+    //     const {date, number, domestic, foreign, death} = b && (date1 - a.date > b.date - date1) ? b : a;
+    //     console.log(date, number, domestic, foreign, death);
+    // });
 
     })
     .catch( function(err) {console.log(err)});
@@ -728,7 +763,7 @@ var angles = { x: -20, y: 40, z: 0}
 var colorWater = 'black'
 var colorLand = 'white'
 var colorGraticule = 'darkgray'
-var colorCountry = '#6D7BA6'
+var colorCountry = 'rgb(0, 193, 0)'
 
 var currentPercent = d3.select('#percent');
 
@@ -1021,7 +1056,8 @@ d3.json('korea.json')
       k_projection.scale(scale).translate(offset);
 
       const colorScale = d3.scaleLinear().domain([0, 10000, 50000, 100000])
-          .range(['white', 'rgb(0, 128, 255)', 'rgb(0, 76, 255)']);
+      .range(['white', 'rgb(255, 100, 100)', 'rgb(255, 50, 50)']);
+          // .range(['white', 'rgb(0, 128, 255)', 'rgb(0, 76, 255)']);
 
       g
         .selectAll('path')
@@ -1042,7 +1078,7 @@ d3.json('korea.json')
         .on('mouseover', mouseOver)
         .on('mouseleave', mouseLeave);
 
-      const seoul = d3.select('.korea-map').select('svg').select('g').select('#id11').attr('fill', 'blue');
+      const seoul = d3.select('.korea-map').select('svg').select('g').select('#id11').attr('fill', 'red');
       console.log('================');
       console.log(seoul.node().parentNode);
       console.log('================');
@@ -1114,6 +1150,7 @@ var okayToProceed6 = true;
 var okayToProceedFO = true;
 
 var okayToProceedLast = true;
+var okayToProceedHover = true;
 
 
 var toggleWuhanCircleR = false;
@@ -1124,14 +1161,23 @@ var repeatOn = true;
 
 var foreign, div1, div2, plane;
 
+var feverCon = document.querySelector('.fever');
+var redText2 = document.querySelector('.red-text2');
+var underline2 = document.createElement('div');
+underline2.setAttribute('id', 'underline2');
+// underline.style.width = redText.getClientRects()[0].width + 'px';
+underline2.style.top = window.scrollY + redText2.getClientRects()[0].y + redText2.getClientRects()[0].height - 5 + 'px';
+underline2.style.left = redText2.getClientRects()[0].x + 'px';
+feverCon.appendChild(underline2);
+
 const storyCons = document.getElementsByClassName('story-container');
 
 window.addEventListener('wheel', function(e) {
   
   console.log(window.scrollY);
     // 한국만 확대
-    if (window.scrollY > screenHeight && window.scrollY < screenHeight) {
-      
+    if (window.scrollY > 0 && window.scrollY < screenHeight) {
+      document.querySelector('#iconArrow').style.opacity = 0;
       
       // gWRLD.transition()
       //   .duration(2000)
@@ -1167,7 +1213,7 @@ window.addEventListener('wheel', function(e) {
         gWRLD.transition()
           .duration(1000)
           .attr('transform-origin', 'center')
-          .attr('transform', 'scale(8)  translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')');
+          .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*3.5 + ',' + -height*3.5 + ') scale(' + 8 + ')' + ' translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[0].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')') : 'scale(8)  translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')');
       }
     }
 
@@ -1211,7 +1257,7 @@ window.addEventListener('wheel', function(e) {
       gWRLD.transition()
         .duration(1000)
         .attr('transform-origin', 'center')
-        .attr('transform', 'scale(10)  translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')');
+        .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*4.5 + ',' + -height*4.5 + ') scale(' + 10 + ')' + ' translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')') : 'scale(10)  translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')');
 
       if (!circleOnce) {
         circleOnce = true;
@@ -1222,13 +1268,14 @@ window.addEventListener('wheel', function(e) {
         .append('circle')
         .attr('cx', width/2)
         .attr('cy', height/2)
-        .attr('r', 5)
-        .attr('fill', '#8A8EA6')
+        .attr('r', 10)
+        .attr('fill', 'white')
         .attr('opacity', 0);
 
         circle1
         .transition()
-        .delay(1500)
+        .delay(1000)
+        .duration(1000)
         .attr('opacity', 0.5);
 
         circle2 = svg.append('g').selectAll('svg')
@@ -1237,17 +1284,17 @@ window.addEventListener('wheel', function(e) {
         .append('circle')
         .attr('cx', width/2)
         .attr('cy', height/2)
-        .attr('r', 5)
-        .attr('fill', '#8A8EA6')
+        .attr('r', 10)
+        .attr('fill', 'white')
         .attr('opacity', 0);
 
         circle2
         .transition()
-        .delay(1500)
+        .delay(1000)
         .ease(d3.easeQuadIn)
         .duration(1000)
         .attr('opacity', 0.5)
-        .attr('r', 12)
+        .attr('r', 20)
         .transition()
         .duration(800)
         .ease(d3.easeQuadOut)
@@ -1257,12 +1304,12 @@ window.addEventListener('wheel', function(e) {
         function repeatCircle(d) {
           toggleWuhanCircleR = !toggleWuhanCircleR;
           d3.select(this)
-            .attr('r', 5)
+            .attr('r', 10)
             .transition()
             .ease(d3.easeQuadIn)
             .duration(800)
             .attr('opacity', 0.5)
-            .attr('r', 12)
+            .attr('r', 20)
             .transition()
             .ease(d3.easeQuadOut)
             .duration(500)
@@ -1308,7 +1355,7 @@ window.addEventListener('wheel', function(e) {
       plane = div2.append('i');
       plane.attr('x', 25)
           .attr('y', 25)
-          .style('color', '#696969')
+          .style('color', 'white')
           .style('font-size', '20px')
           .attr('class', 'fas fa-plane');
 
@@ -1325,6 +1372,10 @@ window.addEventListener('wheel', function(e) {
       .duration(2000)
       .attr('transform-origin', 'center')
       .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*4.5 + ',' + -height*4.5 + ') scale(' + 10 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : ('scale(' + 10 + ') translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')'))
+
+      d3.select('#korea')
+          .transition()
+          .style('stroke', '#6D7BA6')
       // .on('end', () => okayToProceed = true);
       }
     }
@@ -1332,6 +1383,18 @@ window.addEventListener('wheel', function(e) {
     if (window.scrollY > screenHeight*5 - 300 && window.scrollY < screenHeight*6 && e.deltaY > 0) {
       if (okayToProceed4) {
         okayToProceed4 = false;
+
+        underline2.animate([
+          {width: '0px'},
+          {width: redText2.getClientRects()[0].width + 'px'}
+        ], {
+          delay: 500,
+          duration: 500,
+          easing: 'ease-in-out',
+          fill: 'forwards',
+          // interations: Infinity
+        });
+
         //3
         storyCons[2].lastChild.animate([
           {width: '0px'},
@@ -1348,6 +1411,10 @@ window.addEventListener('wheel', function(e) {
         foreign.transition()
           .duration(500)
           .attr('opacity', 0)
+
+        d3.select('#korea')
+          .transition()
+          .style('stroke', 'red')
           // .on('end', () => okayToProceed = true);
       }
     }
@@ -1367,9 +1434,7 @@ window.addEventListener('wheel', function(e) {
           // interations: Infinity
         });
 
-        d3.select('#korea')
-          .transition()
-          .style('stroke', '#6D7BA6')
+        
           // .on('end', () => okayToProceed = true);
       }
     }
@@ -1458,32 +1523,44 @@ window.addEventListener('wheel', function(e) {
     document.querySelector('.thirdCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
   }
 
-  if (window.scrollY > screenHeight*11 && window.scrollY < screenHeight*12) {
+  if (window.scrollY > screenHeight*14 && window.scrollY < screenHeight*15) {
     console.log('VERTICAL CHART');
 
   }
 
-  if (window.scrollY > screenHeight*12 && window.scrollY < screenHeight*13) {
+  if (window.scrollY > screenHeight*15 && window.scrollY < screenHeight*16) {
     console.log('LINE CHART');
   }
 
-  if (window.scrollY > screenHeight*13 && window.scrollY < screenHeight*14) {
+  if (window.scrollY > screenHeight*16 && window.scrollY < screenHeight*17) {
     console.log('TEXT V');
   }
 
-  if (window.scrollY > screenHeight*14 && window.scrollY < screenHeight*15) {
+  if (window.scrollY > screenHeight*17 && window.scrollY < screenHeight*18) {
     console.log('3D MAP');
   }
 
-  if (window.scrollY > screenHeight*15 && window.scrollY < screenHeight*16) {
-    console.log('HOVER CHART');
+  if (window.scrollY > screenHeight*18 && window.scrollY < screenHeight*19) {
+    if (okayToProceedHover){
+      okayToProceedHover = false;
+      console.log('HOVER CHART');
+      tempRect.animate([
+        {width: '0px'},
+        {width: tempText.getClientRects()[0].width + 'px'}
+      ], {
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
+    }
   }
 
   if (window.scrollY > screenHeight*16 && window.scrollY < screenHeight*17) {
     console.log('2D MAP');
   }
 
-  if (window.scrollY === screenHeight*20 + screenHeight/2) {
+  if (window.scrollY >= screenHeight*20 + screenHeight/2 ) {
+    document.querySelector('body').style.overflow = 'hidden';
     console.log('LAST');
     if (okayToProceedLast) {
       okayToProceedLast = false;
@@ -1497,6 +1574,16 @@ window.addEventListener('wheel', function(e) {
       leftB.style.animation = 'distanceLeft 1s ease-in-out forwards';
       rightB.style.animation = 'distanceRight 1s ease-in-out forwards';
       middleL.style.animation = 'distanceLine 1s ease-in-out forwards';
+
+      document.querySelector('.mask').style.animation = 'cough 0.8s ease-out forwards';
+      maskRect.animate([
+        {height: '0px'},
+        {height: maskText.getClientRects()[0].height + 'px'}
+      ], {
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
     }
   }
 });
@@ -1603,7 +1690,7 @@ function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
     .duration(2000)
     .attr('transform-origin', 'center')
     // .attr('transform', 'scale(5)');
-    .attr('transform', 'scale(15)  translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+    .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : 'scale(15)  translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
 }
 
 
@@ -1618,16 +1705,16 @@ titleCon.animate([
 })
 
 // red-text 줄긋기
-var redText = document.querySelector('.red-text');
+var redText1 = document.querySelector('.red-text1');
 var underline = document.createElement('div');
 underline.setAttribute('id', 'underline');
 // underline.style.width = redText.getClientRects()[0].width + 'px';
-underline.style.top = redText.getClientRects()[0].y + redText.getClientRects()[0].height + 'px';
-underline.style.left = redText.getClientRects()[0].x + 'px';
+underline.style.top = redText1.getClientRects()[0].y + redText1.getClientRects()[0].height + 'px';
+underline.style.left = redText1.getClientRects()[0].x + 'px';
 
 underline.animate([
   {width: '0px'},
-  {width: redText.getClientRects()[0].width + 'px'}
+  {width: redText1.getClientRects()[0].width + 'px'}
 ], {
   delay: 1500,
   duration: 500,
@@ -1635,8 +1722,11 @@ underline.animate([
   fill: 'forwards',
   // interations: Infinity
 });
-
 titleCon.appendChild(underline);
+
+
+
+
 
 for (let story of storyCons) {
   // black-story-text 줄긋기
@@ -1652,3 +1742,27 @@ for (let story of storyCons) {
 }
 
 
+const lastCon = document.querySelector('.last');
+const maskText = document.querySelector('.mask');
+var maskRect = document.createElement('div');
+maskRect.setAttribute('id', 'maskRect');
+
+maskRect.style.width = maskText.getClientRects()[0].width + 'px';
+maskRect.style.top = window.scrollY + maskText.getClientRects()[0].y + 'px';
+maskRect.style.left = maskText.getClientRects()[0].x + 'px';
+
+lastCon.appendChild(maskRect);
+
+
+const tempCon = document.querySelector('.temp-container');
+const tempText = document.querySelector('.green-text');
+var tempRect = document.createElement('div');
+tempRect.setAttribute('id', 'tempRect');
+
+// tempRect.style.width = tempText.getClientRects()[0].width + 'px';
+tempRect.style.top = window.scrollY + tempText.getClientRects()[0].y + tempText.getClientRects()[0].height + 'px';
+tempRect.style.left = tempText.getClientRects()[0].x + 'px';
+
+
+
+tempCon.appendChild(tempRect);
