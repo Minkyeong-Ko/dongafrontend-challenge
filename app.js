@@ -1113,6 +1113,8 @@ var okayToProceed6 = true;
 
 var okayToProceedFO = true;
 
+var okayToProceedLast = true;
+
 
 var toggleWuhanCircleR = false;
 var circleOnce = false;
@@ -1128,7 +1130,7 @@ window.addEventListener('wheel', function(e) {
   
   console.log(window.scrollY);
     // 한국만 확대
-    if (window.scrollY > screenHeight && window.scrollY < screenHeight ) {
+    if (window.scrollY > screenHeight && window.scrollY < screenHeight) {
       
       
       // gWRLD.transition()
@@ -1141,7 +1143,7 @@ window.addEventListener('wheel', function(e) {
     //   document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.5s ease-in-out forwards';
     // }
 
-    if (window.scrollY > screenHeight + screenHeight/2 && window.scrollY < screenHeight*2) {
+    if (window.scrollY > screenHeight + screenHeight/2 && window.scrollY < screenHeight*2 && e.deltaY > 0) {
       document.querySelector('.firstCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
 
       if (okayToProceed1) {
@@ -1169,7 +1171,7 @@ window.addEventListener('wheel', function(e) {
       }
     }
 
-    if (window.scrollY > screenHeight*2 + 300 && window.scrollY < screenHeight*3) {
+    if (window.scrollY > screenHeight*2 + 300 && window.scrollY < screenHeight*3 && e.deltaY > 0) {
       document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
     }
 
@@ -1183,7 +1185,7 @@ window.addEventListener('wheel', function(e) {
     // }
 
     
-    if (window.scrollY > screenHeight*3 - 300 && window.scrollY < screenHeight*4) {
+    if (window.scrollY > screenHeight*3 - 300 && window.scrollY < screenHeight*4 && e.deltaY > 0) {
       console.log('zoom wu');
       if (okayToProceed2) {
         okayToProceed2 = false;
@@ -1272,7 +1274,7 @@ window.addEventListener('wheel', function(e) {
       }
     } 
     
-    if (window.scrollY > screenHeight*4 - 300 && window.scrollY < screenHeight*5) {
+    if (window.scrollY > screenHeight*4 - 300 && window.scrollY < screenHeight*5 && e.deltaY > 0) {
       if (okayToProceed3) {
         okayToProceed3 = false;
         //2
@@ -1327,7 +1329,7 @@ window.addEventListener('wheel', function(e) {
       }
     }
 
-    if (window.scrollY > screenHeight*5 - 300 && window.scrollY < screenHeight*6) {
+    if (window.scrollY > screenHeight*5 - 300 && window.scrollY < screenHeight*6 && e.deltaY > 0) {
       if (okayToProceed4) {
         okayToProceed4 = false;
         //3
@@ -1350,7 +1352,7 @@ window.addEventListener('wheel', function(e) {
       }
     }
 
-    if (window.scrollY > screenHeight*6 - 300 && window.scrollY < screenHeight*7) {
+    if (window.scrollY > screenHeight*6 - 300 && window.scrollY < screenHeight*7 && e.deltaY > 0) {
       if (okayToProceed5) {
         okayToProceed5 = false;
         //4
@@ -1372,7 +1374,7 @@ window.addEventListener('wheel', function(e) {
       }
     }
 
-    if (window.scrollY > screenHeight*7 - 300 && window.scrollY < screenHeight*8) {
+    if (window.scrollY > screenHeight*7 - 300 && window.scrollY < screenHeight*8 && e.deltaY > 0) {
       if (okayToProceed6) {
         okayToProceed6 = false;
         //5
@@ -1429,13 +1431,13 @@ window.addEventListener('wheel', function(e) {
       }
     }
 
-  if (window.scrollY > screenHeight*7 + 300 ) {
+  if (window.scrollY > screenHeight*7 + 300 && e.deltaY > 0) {
     if (okayToProceedFO) {
       okayToProceedFO = false;
       svg.transition().duration(1000).style('opacity', 0);
     }
   }
-  if (window.scrollY > screenHeight*8 && window.scrollY < screenHeight*10) {
+  if (window.scrollY > screenHeight*8 && window.scrollY < screenHeight*10 && e.deltaY > 0) {
     console.log('VIDEO');
   }
 
@@ -1444,7 +1446,7 @@ window.addEventListener('wheel', function(e) {
     document.querySelector('.secondCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
   }
 
-  if (window.scrollY > screenHeight*11 + 300 && window.scrollY < screenHeight*12) {
+  if (window.scrollY > screenHeight*11 + 300 && window.scrollY < screenHeight*12 && e.deltaY > 0) {
     document.querySelector('.secondCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
   }
 
@@ -1452,7 +1454,7 @@ window.addEventListener('wheel', function(e) {
     document.querySelector('.thirdCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
   }
 
-  if (window.scrollY > screenHeight*13 + 300 && window.scrollY < screenHeight*14) {
+  if (window.scrollY > screenHeight*13 + 300 && window.scrollY < screenHeight*14 && e.deltaY > 0) {
     document.querySelector('.thirdCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
   }
 
@@ -1481,8 +1483,21 @@ window.addEventListener('wheel', function(e) {
     console.log('2D MAP');
   }
 
-  if (window.scrollY === screenHeight*17) {
+  if (window.scrollY === screenHeight*20 + screenHeight/2) {
     console.log('LAST');
+    if (okayToProceedLast) {
+      okayToProceedLast = false;
+      const leftT = document.querySelector('.leftText');
+      const rightT = document.querySelector('.rightText');
+      const leftB = document.querySelector('.leftBox');
+      const rightB = document.querySelector('.rightBox');
+      const middleL = document.querySelector('.middleLine');
+      leftT.style.animation = 'distanceLeftText 1s ease-in-out forwards';
+      rightT.style.animation = 'distanceRightText 1s ease-in-out forwards';
+      leftB.style.animation = 'distanceLeft 1s ease-in-out forwards';
+      rightB.style.animation = 'distanceRight 1s ease-in-out forwards';
+      middleL.style.animation = 'distanceLine 1s ease-in-out forwards';
+    }
   }
 });
 

@@ -25,7 +25,7 @@ span {
 
 #container {
     width: 100%;
-    height: 2250vh;
+    height: 2150vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -325,7 +325,7 @@ p {
     background-color: red;
     width: 10px;
     height: 3rem;
-    animation: distanceLeft 1s ease-in-out forwards;
+    /* animation: distanceLeft 1s ease-in-out forwards; */
 }
 
 .middleLine {
@@ -333,26 +333,30 @@ p {
     height: 1px;
     background-color: red;
     position: absolute;
-    animation: distanceLine 1s ease-in-out forwards;
+    /* animation: distanceLine 1s ease-in-out forwards; */
 }
 
 .rightBox {
     background-color: red;
     width: 10px;
     height: 3rem;
-    animation: distanceRight 1s ease-in-out forwards;
+    /* animation: distanceRight 1s ease-in-out forwards; */
 }
 
 .leftText {
-    animation: distanceLeftText 1s ease-in-out forwards;
+    /* animation: distanceLeftText 1s ease-in-out forwards; */
 }
 
 .rightText {
-    animation: distanceRightText 1s ease-in-out forwards;
+    /* animation: distanceRightText 1s ease-in-out forwards; */
 }
 
 .last {
+    width: 100%;
+    height: 100vh;
     display: flex;
+    justify-content: center;
+    align-items: center;
     flex-direction: column;
 }
 
