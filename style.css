@@ -19,9 +19,13 @@ p {
     margin: 0;
 }
 
+span {
+    margin: 0;
+}
+
 #container {
     width: 100%;
-    height: 1800vh;
+    height: 2250vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -35,8 +39,9 @@ g {
 }
 
 .country {
-    fill: transparent;
-    stroke: rgba(128, 128, 128, 0.342);
+    /* fill: #666873; */
+    stroke: #696969;
+    /* color: #66687375; */
     /* stroke: white; */
     stroke-width: 0.1px;
     stroke-linecap: round;
@@ -95,6 +100,8 @@ g {
     align-items: center;
     padding: 5%;
     box-sizing: border-box;
+
+    opacity: 0;
 }
 
 .title {
@@ -102,12 +109,12 @@ g {
 }
 
 .red-text {
-    color: red;
+    /* color: red; */
 }
 
 .center-container {
     width: 100%;
-    height: 100vh;
+    height: 200vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -117,7 +124,7 @@ g {
 
 .big {
     color: white;
-    font-size: 50px;
+    font-size: 2.5em;
     font-weight: bold;
 }
 
@@ -142,11 +149,40 @@ g {
     box-sizing: border-box;
 }
 
+.video-container p {
+    color:  white;
+    font-size: 1rem;
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
 .story {
-    color: white;
-    font-size: 20px;
-    padding: 20%;
+    color: #000;
+    position: absolute;
+    font-size: 15px;
+    width: 40%;
+    /* height: 15%; */
+    margin-right: 5%;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    right: 0;
     box-sizing: border-box;
+    background-color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.story p {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.story span {
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 .full-statistics-container {
@@ -167,8 +203,12 @@ g {
     justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    padding: 5%;
-    box-sizing: border-box;
+    margin-top: 50vh;
+    /* padding: 5%;
+    box-sizing: border-box; */
+
+    /* position: sticky;
+    top: 0; */
 }
 
 svg image {
@@ -201,7 +241,9 @@ foreignObject svg{
 }
 
 video {
-    width: 60%;
+    width: 50%;
+    margin-top: 10%;
+    margin-bottom: 10%;
 }
 
 .tooltip-statistics-container {
@@ -216,15 +258,15 @@ video {
 }
 
 .domain {
-    stroke: red;
+    stroke: #F2E8D5;
 }
 
 .tick line {
-    stroke: red;
+    stroke: #F2E8D5;
 }
 
 .tick text {
-    fill: red;
+    fill: #F2E8D5;
 }
 
 
@@ -234,7 +276,12 @@ canvas {
 }
 
 .globe-3d {
+    width: 100%;
+    height: 100vh;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 #globe {
@@ -243,20 +290,195 @@ canvas {
 
 #current {
     position: absolute;
-    left: 0;
-    top: 20%;
     font-family: sans-serif;
-    color: blue;
+    color: white;
+    text-transform: uppercase;
 }
 
 #percent {
     position: absolute;
-    left: 0;
-    top: 50%;
+    top: 5%;
     font-family: sans-serif;
-    color: yellow;
+    color: #8A8EA6;
 }
 
 p {
+    /* color: rgba(245, 245, 245, 0.307);
+    color: white; */
+}
+
+#underline {
+    position: absolute;
+    height: 8px;
+    background-color: rgba(255, 0, 0, 0.801);
+}
+
+.social-distance {
+    width: 50px;
+    height: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.leftBox {
+    background-color: red;
+    width: 10px;
+    height: 3rem;
+    animation: distanceLeft 1s ease-in-out forwards;
+}
+
+.middleLine {
+    width: 1px;
+    height: 1px;
+    background-color: red;
+    position: absolute;
+    animation: distanceLine 1s ease-in-out forwards;
+}
+
+.rightBox {
+    background-color: red;
+    width: 10px;
+    height: 3rem;
+    animation: distanceRight 1s ease-in-out forwards;
+}
+
+.leftText {
+    animation: distanceLeftText 1s ease-in-out forwards;
+}
+
+.rightText {
+    animation: distanceRightText 1s ease-in-out forwards;
+}
+
+.last {
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes distanceLeft {
+    to {
+        transform: translateX(-100px);
+        background-color: green;
+    }
+}
+
+@keyframes distanceLeftText {
+    to {
+        transform: translateX(-100px);
+    }
+}
+
+@keyframes distanceRight {
+    to {
+        transform: translateX(100px);
+        background-color: green;
+    }
+}
+
+@keyframes distanceRightText {
+    to {
+        transform: translateX(100px);
+    }
+}
+
+@keyframes distanceLine {
+    to {
+        width: 220px;
+        background-color: green;
+    }
+}
+
+.social-distance-container {
+    display: flex;
+}
+
+.center-container p {
+    font-size: 3.5rem;
+    font-weight: bold;
     color: white;
+    transform: translate(0, 100px);
+    position: sticky;
+    top: 50%;
+    opacity: 0;
+}
+
+#underlineBlack {
+    position: absolute;
+    height: 3px;
+    background-color: rgba(0, 0, 0, 0.774);
+}
+
+/* .firstCenterText {
+    
+} */
+
+@keyframes show-text {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(0, 0px);
+    }
+}
+
+@keyframes unshow-text {
+    from {
+        opacity: 1;
+        transform: translate(0, 0px);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(0, -100px);
+    }
+}
+
+.just-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.just-container p {
+    color: white;
+    font-size: 3.5rem;
+    font-weight: bold;
+}
+
+.korea-map {
+    position: relative;
+}
+
+.koreaMapText {
+    font-size: 1.5rem;
+    top: 30%;
+    width: 50%;
+    margin-left: 10%;
+    position: absolute;
+    left: 0;
+    color: white;
+    font-weight: bold;
+}
+
+.kmapText1 {
+    position: absolute;
+    left: 10%;
+    top: 50%;
+}
+
+.kmapText2 {
+    position: absolute;
+    left: 10%;
+    top: 55%;
+}
+
+.kmapText3 {
+    position: absolute;
+    left: 10%;
+    top: 60%;
 }

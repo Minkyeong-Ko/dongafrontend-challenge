@@ -29,243 +29,243 @@ const newMapInfo = {
 
 var checkOnce = true;
 
-d3.json("world.json")
-    .then(data => {
-        const worldMap = data;
-        const geojson = topojson.feature(worldMap, worldMap.objects.countries);
-        const center = d3.geoCentroid(geojson);
-        // console.log(center);
+// d3.json("world.json")
+//     .then(data => {
+//         const worldMap = data;
+//         const geojson = topojson.feature(worldMap, worldMap.objects.countries);
+//         const center = d3.geoCentroid(geojson);
+//         // console.log(center);
 
-        const korea = geojson.features.find(element => element.id === '410');
+//         const korea = geojson.features.find(element => element.id === '410');
 
-        const projection = d3.geoMercator()
-            .scale(1)
-            .translate([0, 0]);
+//         const projection = d3.geoMercator()
+//             .scale(1)
+//             .translate([0, 0]);
 
-        const path = d3.geoPath(projection);
+//         const path = d3.geoPath(projection);
 
-        const g = svg.append('g').attr('class', 'mapg');
-        const bounds = path.bounds(geojson);
-        const widthScale = (bounds[1][0] - bounds[0][0]) / width; 
-        const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
-        const scale = 1 /Math.max(widthScale, heightScale); //축척
-        const xoffset = width/2 - scale * (bounds[1][0] + bounds[0][0])/2; 
-        const yoffset = height/2 - scale * (bounds[1][1] + bounds[0][1])/2; 
-        const offset = [xoffset, yoffset];
-        projection.scale(scale).translate(offset);
-        // console.log(scale, offset);
+//         const g = svg.append('g').attr('class', 'mapg');
+//         const bounds = path.bounds(geojson);
+//         const widthScale = (bounds[1][0] - bounds[0][0]) / width; 
+//         const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
+//         const scale = 1 /Math.max(widthScale, heightScale); //축척
+//         const xoffset = width/2 - scale * (bounds[1][0] + bounds[0][0])/2; 
+//         const yoffset = height/2 - scale * (bounds[1][1] + bounds[0][1])/2; 
+//         const offset = [xoffset, yoffset];
+//         projection.scale(scale).translate(offset);
+//         // console.log(scale, offset);
 
-        var toggleKoreaFillColor = false;
-        var toggleWuhanCircleR = false;
+//         var toggleKoreaFillColor = false;
+//         var toggleWuhanCircleR = false;
 
-        g
-        .selectAll('path').data(geojson.features)
-        .enter().append('path')
-        .attr('class', 'country')
-        .attr('d', path)
-        .transition()
-        .duration(2000)
-        .style('fill', d => {
-            toggleKoreaFillColor = !toggleKoreaFillColor;
-            if (d.id === '410') {
-                return 'red';
-            }
-            else return 'transparent';
-        })
-        .style('stroke', d => {
-            if (d.id === '410') {
-                return 'red';
-            }
-        })
-        .on('end', repeat);
+//         g
+//         .selectAll('path').data(geojson.features)
+//         .enter().append('path')
+//         .attr('class', 'country')
+//         .attr('d', path)
+//         .transition()
+//         .duration(2000)
+//         .style('fill', d => {
+//             toggleKoreaFillColor = !toggleKoreaFillColor;
+//             if (d.id === '410') {
+//                 return 'red';
+//             }
+//             else return 'transparent';
+//         })
+//         .style('stroke', d => {
+//             if (d.id === '410') {
+//                 return 'red';
+//             }
+//         })
+//         .on('end', repeat);
 
-        function repeat(d) {
-            if (d.id === '410') {
-                d3.select(this)
-                .transition()
-                .duration(2000)
-                .style('fill', toggleKoreaFillColor ? 'transparent' : 'red')
-                .style('stroke', toggleKoreaFillColor ? null : 'red')
-                .on('end', repeat);
-                toggleKoreaFillColor = !toggleKoreaFillColor;
-            }
-        }
+//         function repeat(d) {
+//             if (d.id === '410') {
+//                 d3.select(this)
+//                 .transition()
+//                 .duration(2000)
+//                 .style('fill', toggleKoreaFillColor ? 'transparent' : 'red')
+//                 .style('stroke', toggleKoreaFillColor ? null : 'red')
+//                 .on('end', repeat);
+//                 toggleKoreaFillColor = !toggleKoreaFillColor;
+//             }
+//         }
 
-        g.transition().style('background-color', 'blue');
+//         g.transition().style('background-color', 'blue');
 
-        const cur_brower = browserCheck();
-        const transforms = cur_brower === 'Chrome' ? '' : 'translate(' + -width*7 + ',' + -height*7 + ') scale(15)';
+//         const cur_brower = browserCheck();
+//         const transforms = cur_brower === 'Chrome' ? '' : 'translate(' + -width*7 + ',' + -height*7 + ') scale(15)';
 
-        const icons = svg.append('g').selectAll('svg')
-            .data(mapInfo)
-            .enter()  
-            .append("rect")
-            .attr("width", 10)
-            .attr("height", 10)
-            .attr('fill', 'green')
-            .attr('x' ,  d => projection([d.lon, d.lat])[0])
-            .attr('y' ,  d => projection([d.lon, d.lat])[1])
-            .attr('opacity', 1)
-            .on('click', function(d, i) {
-                // 여기서 plane append 해보기
-                // const testplane = div2.append('i')
-                //     .attr('x', 25)
-                //     .attr('y', 25)
-                //     .style('color', 'white')
-                //     .style('font-size', '50px')
-                //     .attr('class', 'fas fa-plane')
-                //     .style('transform', 'rotate(-30deg)');
-                // testplane.transition()
-                //     .style('color', 'yellow');
+//         const icons = svg.append('g').selectAll('svg')
+//             .data(mapInfo)
+//             .enter()  
+//             .append("rect")
+//             .attr("width", 10)
+//             .attr("height", 10)
+//             .attr('fill', 'green')
+//             .attr('x' ,  d => projection([d.lon, d.lat])[0])
+//             .attr('y' ,  d => projection([d.lon, d.lat])[1])
+//             .attr('opacity', 1)
+//             .on('click', function(d, i) {
+//                 // 여기서 plane append 해보기
+//                 // const testplane = div2.append('i')
+//                 //     .attr('x', 25)
+//                 //     .attr('y', 25)
+//                 //     .style('color', 'white')
+//                 //     .style('font-size', '50px')
+//                 //     .attr('class', 'fas fa-plane')
+//                 //     .style('transform', 'rotate(-30deg)');
+//                 // testplane.transition()
+//                 //     .style('color', 'yellow');
 
-                if (checkOnce) {
-                    const foreign = svg.append('foreignObject')
-                        .attr('width', 50)
-                        .attr('height', 50)
-                        .attr('x', width/2 - 25)
-                        .attr('y', height/2 - 25)
-                        .attr('fill', 'red');
-                    const div1 = foreign.append('xhtml:div');
-                    const div2 = div1.append('div')
-                        .attr('x', 25)
-                        .attr('y', 25)
-                        .attr('width', 50)
-                        .attr('height', 50);
+//                 if (checkOnce) {
+//                     const foreign = svg.append('foreignObject')
+//                         .attr('width', 50)
+//                         .attr('height', 50)
+//                         .attr('x', width/2 - 25)
+//                         .attr('y', height/2 - 25)
+//                         .attr('fill', 'red');
+//                     const div1 = foreign.append('xhtml:div');
+//                     const div2 = div1.append('div')
+//                         .attr('x', 25)
+//                         .attr('y', 25)
+//                         .attr('width', 50)
+//                         .attr('height', 50);
                     
-                    const plane = div2.append('i');
-                    plane.attr('x', 25)
-                        .attr('y', 25)
-                        .style('color', 'white')
-                        .style('font-size', '20px')
-                        .attr('class', 'fas fa-plane');
+//                     const plane = div2.append('i');
+//                     plane.attr('x', 25)
+//                         .attr('y', 25)
+//                         .style('color', 'white')
+//                         .style('font-size', '20px')
+//                         .attr('class', 'fas fa-plane');
                     
-                    foreign.transition()
-                        .duration(1000)
-                        .style('transform-origin', 'center')
-                        .attr('transform', 'rotate(30)');
-                    checkOnce = false;
-                }
+//                     foreign.transition()
+//                         .duration(1000)
+//                         .style('transform-origin', 'center')
+//                         .attr('transform', 'rotate(30)');
+//                     checkOnce = false;
+//                 }
 
-                var zoomLevel = 15;
-                var multiplyLevel = 7;
-                if (i.name === 'China') {
-                    zoomLevel = 10;
-                    multiplyLevel = 4.5;
-                }
-                // console.log(projection([i.lon, i.lat])[0]);
+//                 var zoomLevel = 15;
+//                 var multiplyLevel = 7;
+//                 if (i.name === 'China') {
+//                     zoomLevel = 10;
+//                     multiplyLevel = 4.5;
+//                 }
+//                 // console.log(projection([i.lon, i.lat])[0]);
 
-                // foreign.transition()
-                // .duration(2000)
-                // .ease(d3.easeLinear)
-                // .attr('transform-origin', 'center')
-                // .attr('transform', 'rotate(30)')
-                // .transition()
-                // .duration(0)
-                // .attr('transform', 'rotate(-30)');
-
-
+//                 // foreign.transition()
+//                 // .duration(2000)
+//                 // .ease(d3.easeLinear)
+//                 // .attr('transform-origin', 'center')
+//                 // .attr('transform', 'rotate(30)')
+//                 // .transition()
+//                 // .duration(0)
+//                 // .attr('transform', 'rotate(-30)');
 
 
-                g.transition()
-                .duration(2000)
-                .attr('transform-origin', 'center')
-                .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*multiplyLevel + ',' + -height*multiplyLevel + ') scale(' + zoomLevel + ')' + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')') : ('scale(' + zoomLevel + ') translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'));
 
-                if (i.name === 'Wuhan') {
-                    svg.append('g').selectAll('svg')
-                        .data([0])
-                        .enter()
-                        .append('circle')
-                        .attr('cx', width/2)
-                        .attr('cy', height/2)
-                        .attr('r', 5)
-                        .attr('fill', 'orange')
-                        .attr('opacity', 0)
-                        .on('click', function() {
-                            toggleWuhanCircleR = !toggleWuhanCircleR;
-                            console.log('clicked');
-                            d3.select(this)
-                                .transition()
-                                .duration(200)
-                                .attr('opacity', 1)
-                            svg.append('g').selectAll('svg')
-                                .data([1])
-                                .enter()
-                                .append('circle')
-                                .attr('cx', width/2)
-                                .attr('cy', height/2)
-                                .attr('r', 5)
-                                .attr('fill', 'orange')
-                                .attr('opacity', 0)
-                                .transition()
-                                .ease(d3.easeQuadIn)
-                                .duration(1000)
-                                .attr('opacity', 0.5)
-                                .attr('r', 12)
-                                .transition(500)
-                                .ease(d3.easeQuadOut)
-                                .attr('opacity', 0)
-                                .on('end', repeatCircle);
-                            // d3.select(this)
-                            //     .transition()
-                            //     .duration(1000)
-                            //     .attr('opacity', 1);
-                        });
-                }
 
-                function repeatCircle(d) {
-                    // console.log('newCircle');
-                    d3.select(this)
-                    .attr('r', 5)
-                    .transition()
-                    .ease(d3.easeQuadIn)
-                    .duration(1000)
-                    .attr('opacity', 0.5)
-                    .attr('r', 12)
-                    .transition()
-                    .ease(d3.easeQuadOut)
-                    .duration(500)
-                    .attr('opacity', 0)
-                    .on('end', repeatCircle);
-                    toggleWuhanCircleR = !toggleWuhanCircleR;
-                }
-            });
+//                 g.transition()
+//                 .duration(2000)
+//                 .attr('transform-origin', 'center')
+//                 .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*multiplyLevel + ',' + -height*multiplyLevel + ') scale(' + zoomLevel + ')' + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')') : ('scale(' + zoomLevel + ') translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'));
+
+//                 if (i.name === 'Wuhan') {
+//                     svg.append('g').selectAll('svg')
+//                         .data([0])
+//                         .enter()
+//                         .append('circle')
+//                         .attr('cx', width/2)
+//                         .attr('cy', height/2)
+//                         .attr('r', 5)
+//                         .attr('fill', 'orange')
+//                         .attr('opacity', 0)
+//                         .on('click', function() {
+//                             toggleWuhanCircleR = !toggleWuhanCircleR;
+//                             console.log('clicked');
+//                             d3.select(this)
+//                                 .transition()
+//                                 .duration(200)
+//                                 .attr('opacity', 1)
+//                             svg.append('g').selectAll('svg')
+//                                 .data([1])
+//                                 .enter()
+//                                 .append('circle')
+//                                 .attr('cx', width/2)
+//                                 .attr('cy', height/2)
+//                                 .attr('r', 5)
+//                                 .attr('fill', 'orange')
+//                                 .attr('opacity', 0)
+//                                 .transition()
+//                                 .ease(d3.easeQuadIn)
+//                                 .duration(1000)
+//                                 .attr('opacity', 0.5)
+//                                 .attr('r', 12)
+//                                 .transition(500)
+//                                 .ease(d3.easeQuadOut)
+//                                 .attr('opacity', 0)
+//                                 .on('end', repeatCircle);
+//                             // d3.select(this)
+//                             //     .transition()
+//                             //     .duration(1000)
+//                             //     .attr('opacity', 1);
+//                         });
+//                 }
+
+//                 function repeatCircle(d) {
+//                     // console.log('newCircle');
+//                     d3.select(this)
+//                     .attr('r', 5)
+//                     .transition()
+//                     .ease(d3.easeQuadIn)
+//                     .duration(1000)
+//                     .attr('opacity', 0.5)
+//                     .attr('r', 12)
+//                     .transition()
+//                     .ease(d3.easeQuadOut)
+//                     .duration(500)
+//                     .attr('opacity', 0)
+//                     .on('end', repeatCircle);
+//                     toggleWuhanCircleR = !toggleWuhanCircleR;
+//                 }
+//             });
         
-        g
-        .transition()
-        .duration(3000)
-        .ease(d3.easePolyInOut)
-        .attr('transform-origin', 'center')
-        .attr('transform', 'scale(15) translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+//         g
+//         .transition()
+//         .duration(3000)
+//         .ease(d3.easePolyInOut)
+//         .attr('transform-origin', 'center')
+//         .attr('transform', 'scale(15) translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
         
 
-        // g.data(newMapInfo)
-        // .transition()
-        // .duration(2000)
-        // .attr('transform-origin', 'center')
-        // .attr('transform', function(d, i) {
-        //     console.log('test?');
-        //     return transforms + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'});
+//         // g.data(newMapInfo)
+//         // .transition()
+//         // .duration(2000)
+//         // .attr('transform-origin', 'center')
+//         // .attr('transform', function(d, i) {
+//         //     console.log('test?');
+//         //     return transforms + ' translate(' + (width/2-projection([i.lon, i.lat])[0]) + ',' + (height/2-projection([i.lon, i.lat])[1]) + ')'});
 
-        const testCenter = svg.append('g').selectAll('svg')
-            .data([center])
-            .enter()
-            .append("rect")
-            .attr("width", 10)
-            .attr("height", 10)
-            .attr('fill', 'blue')
-            .attr('x' ,  d => width/2 - 5)
-            .attr('y' ,  d => height/2 - 5)
-            .on('click', function(d, i) {
-                // console.log(projection([i.lon, i.lat])[0]);
-                g.transition()
-                .duration(2000)
-                .attr('transform-origin', 'center')
-                .attr('transform', 'scale(1)');
-            });
-            // .attr('x' ,  d => projection([d[0], d[1]])[0])
-            // .attr('y' ,  d => projection([d[0], d[1]])[1]);
-}); 
+//         const testCenter = svg.append('g').selectAll('svg')
+//             .data([center])
+//             .enter()
+//             .append("rect")
+//             .attr("width", 10)
+//             .attr("height", 10)
+//             .attr('fill', 'blue')
+//             .attr('x' ,  d => width/2 - 5)
+//             .attr('y' ,  d => height/2 - 5)
+//             .on('click', function(d, i) {
+//                 // console.log(projection([i.lon, i.lat])[0]);
+//                 g.transition()
+//                 .duration(2000)
+//                 .attr('transform-origin', 'center')
+//                 .attr('transform', 'scale(1)');
+//             });
+//             // .attr('x' ,  d => projection([d[0], d[1]])[0])
+//             // .attr('y' ,  d => projection([d[0], d[1]])[1]);
+// }); 
 
 function browserCheck(){ 
 	const agt = navigator.userAgent.toLowerCase(); 
@@ -297,70 +297,88 @@ function browserCheck(){
 const verticalBarGraph = d3.select('.vertical-statistics-container')
     .append('svg')
     .attr('width', width*2)
-    .attr('height', height*0.9)
-    .style('background-color', 'gray');
+    .attr('height', height);
 
 const bar = verticalBarGraph.append('rect')
     .attr('width', width/2)
-    .attr('height', height/20)
+    .attr('height', 1)
     .attr('x', width - width/4)
-    .attr('y', height*0.9/7)
-    .attr('fill', 'blue');
+    .attr('y', 200)
+    .attr('fill', 'rgba(255, 0, 0, 0.801)');
 
 var lines_g = verticalBarGraph.selectAll('g')
-    .data([1, 2, 3, 4, 5, 6])
+    .data([0, 1, 5, 10, 15, 20])
     .enter()
     .append('g');
 
 var lines = lines_g
     .append('line')
-    .attr('x1', '0')
-    .attr('y1', d => d*height*0.9/7)
-    .attr('x2', width*2)
-    .attr('y2', d => d*height*0.9/7)
+    .attr('x1', 200)
+    .attr('y1', d => 200 + d*(height-400)/20)
+    .attr('x2', width*2 - 100)
+    .attr('y2', d => 200 + d*(height-400)/20)
     .attr('stroke', 'white');
 
 lines_g.append('text')
-    .attr('x', 0)
-    .attr('y', d => d*height*0.9/7)
+    .attr('x', 100)
+    .attr('y', d => 200 + d*(height-400)/20)
     .attr('dy', '.35em')
-    .text(function(d) {return d;})
+    .attr('fill', '#666873')
+    .text(function(d) {return d + '만 명';})
 
 
+
+const bottomText = verticalBarGraph.append('text')
+            .text('2021년 8월 2일 0시 기준 20만1002명')
+            .attr('x', width)
+            .attr('y', 200 + (height-400)/20 * 20.1002 + 40)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '1rem')
+            .style('opacity', 0)
+            .attr('fill', '#666873');
+var toggleBtn = false;
 const btn = verticalBarGraph
     .append('g')
     .on('click', function(d) {
         console.log('orange circle');
-        bar.transition()
+        if (!toggleBtn) {
+          bar.transition()
             .duration(1000)
-            .attr('height', height*0.68);
-        
-        const bottomText = verticalBarGraph.append('text')
-            .text('2021년 8월 2일 0시 기준 20만1002명')
-            .attr('x', width)
-            .attr('y', height*0.9 - 40)
-            .attr('text-anchor', 'middle')
-            .style('font-size', 20)
-            .style('opacity', 0);
-        bottomText.transition()
+            .attr('height', (height-400)/20 * 20.5);
+          bottomText.transition()
             .delay(1000)
             .duration(500)
             .style('opacity', 1);
+        }
+
+        else {
+          bar.transition()
+            .duration(1000)
+            .attr('height', 1);
+          bottomText.transition()
+            .duration(500)
+            .style('opacity', 0);
+        }
+        
+        toggleBtn = !toggleBtn;
     });
 
 const btnRect = btn.append('rect')
     .attr('x', width-150)
-    .attr('y', 0)
+    .attr('y', 50)
     .attr('width', 300)
     .attr('height',50)
-    .attr('fill', 'orange');
+    .attr('fill', 'white')
+    .attr('rx', 25)
+    .attr('ry', 25)
+    .style('cursor', 'pointer');
 
 btn.append('text')
     .text('확진자 수 통계')
     .attr('x', width)
-    .attr('y', 35)
+    .attr('y', 85)
     .attr('text-anchor', 'middle')
-    .style('font-size', 30);
+    .style('font-size', 20);
 
 const timepass = verticalBarGraph.append('g');
 const timepassRect = timepass.append('rect')
@@ -372,25 +390,94 @@ const timepassRect = timepass.append('rect')
 
 timepass.append('text')
     .text(0)
-    .attr('x', width*2)
+    .attr('x', width*2 - 100)
     .attr('y', 35)
     .attr('text-anchor', 'end')
-    .style('font-size', 25)
+    .style('font-size', 15)
     .transition()
-    .duration(1000)
+    .duration(5000)
     .tween('text', function() {
         // return d3.interpolateNumber(0, 31);
-        var i = d3.interpolateRound(0, 31);
+        var dates = [31, 30, 28, 29];
+        var year = d3.interpolateRound(2020, 2021);
         return function(t) {
-            d3.select(this).text(i(t));
+            d3.select(this).text(year(t) + '년');
         }
     });
+
+const monthText = timepass.append('text')
+  .text(0)
+  .attr('x', width*2 - 50)
+  .attr('y', 35)
+  .attr('text-anchor', 'end')
+  .style('font-size', 15);
+
+monthText.call(tweenMonth);
+
+function tweenMonth() {
+  monthText
+    .transition()
+    .duration(3000)
+    .tween('text', function() {
+        // return d3.interpolateNumber(0, 31);
+        var dates = [31, 30, 28, 29];
+        var month = d3.interpolateRound(1, 12);
+        return function(t) {
+            d3.select(this).text(month(t) + '월');
+        }
+    })
+    .on('end', function() {
+      tweenMonth();
+    });
+}
+
+// const dayText = timepass.append('text')
+//     .text(0)
+//     .attr('x', width*2)
+//     .attr('y', 35)
+//     .attr('text-anchor', 'end')
+//     .style('font-size', 15);
+
+// dayText.call(tweenDate);
+
+// function tweenDate(sm, sd, em, ed, du) {
+//   var duration = du;
+//   dayText
+//   .transition()
+//   .duration(1000)
+//   .ease(d3.easeLinear)
+//   .tween('text', function() {
+//     var i = d3.interpolateRound(1, 31);
+//     return function(t) {
+//         d3.select(this).text(i(t) + '일');
+//     }
+//   })
+//   .on('end', function() {
+//     tweenDate();
+//   });
+// }
+
+// var datesPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+// var duration;
+// //  2020.1.20 ~ 2020.4.3
+// duration = calcDuration(1, 20, 4, 3, duration);
+// dayText.call(tweenDate(1, 20, 4, 3));
+// monthText.call(tweenMonth(1, 20, 4, 3));
+
+// function calcDuration(sm, sd, em, ed) {
+//   return (em-sm-1)*1000 + (datesPerMonth[sm-1] - sd)/datesPerMonth[sm-1] + ed/datesPerMonth[em-1];
+// }
+
+
+
+
+
 
 // EXAMPLE CODE
 // set the dimensions and margins of the graph
 var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    w = width*1.9 - margin.left - margin.right,
-    h = height*0.6 - margin.top - margin.bottom;
+    w = width*1.5 - margin.left - margin.right,
+    h = height*0.5 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg_t = d3.select(".tooltip-statistics-container")
@@ -444,7 +531,7 @@ d3.csv("accum.csv")
     svg_tooltip.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "steelblue")
+      .attr("stroke", "#6D7BA6")
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
         .x(function(d) { 
@@ -632,16 +719,16 @@ d3.csv("accum.csv")
 // ms to wait after dragging before auto-rotating
 var rotationDelay = 3000
 // scale of the globe (not the canvas element)
-var scaleFactor = 0.9
+var scaleFactor = 0.65
 // autorotation speed
 var degPerSec = 6
 // start angles
 var angles = { x: -20, y: 40, z: 0}
 // colors
-var colorWater = '#fff'
-var colorLand = '#111'
-var colorGraticule = '#ccc'
-var colorCountry = '#a00'
+var colorWater = 'black'
+var colorLand = 'white'
+var colorGraticule = 'darkgray'
+var colorCountry = '#6D7BA6'
 
 var currentPercent = d3.select('#percent');
 
@@ -656,13 +743,28 @@ function enter(country) {
   })
   console.log('enter, get country: ');
   console.log(country);
-  current.text(country && country.name || '');
-  currentPercent.text(country && country.fullyVaccinated || '');
+  current.transition()
+    .duration(50)
+    .attr('opacity', 0)
+    .transition()
+    .duration(50)
+    .text(country && country.name || '')
+    .attr('opacity', 1);
+  currentPercent
+    .transition()
+    .duration(50)
+    .attr('opacity', 0)
+    .transition()
+    .duration(50)
+    .text(country && country.fullyVaccinated || '')
+    .attr('opacity', 1);
 }
 
 function leave(country) {
-  current.text('')
-  currentPercent.text('');
+  current.transition()
+  .duration(500).text('')
+  currentPercent.transition()
+  .duration(500).text('');
 }
 
 //
@@ -858,7 +960,7 @@ function getCountry(event) {
 // Initialization
 //
 
-setAngles() //set angle
+setAngles()
 
 canvas
   .call(d3.drag()
@@ -882,11 +984,13 @@ loadData(function(world, cList) {
 
 
 // KOREA MAP
-const ww = window.innerWidth, hh = window.innerHeight;
+const ww = window.innerWidth/2, hh = window.innerHeight;
 const svgKOR = d3.select('.korea-map')
   .append('svg')
   .attr('width', ww)
-  .attr('height', hh);
+  .attr('height', hh)
+  .style('position', 'absolute')
+  .style('right', 0);
 
 
 
@@ -944,28 +1048,35 @@ d3.json('korea.json')
       console.log('================');
       seoul.node().parentNode.appendChild(seoul.node());
 
-      var currentText = svgKOR.append('text')
-        .text('test')
+      var currentText = d3.select('.korea-map').append('text')
+        .text('')
         .attr('x', 100)
         .attr('y', 40)
         .attr('fill', 'white')
         .attr('text-anchor', 'left')
-        .style('font-size', 20);
+        .style('font-size', 20)
+        .style('color', 'white')
+        .style('font-weight', 'bold')
+        .attr('class', 'kmapText1');
 
-      var sumText = svgKOR.append('text')
+      var sumText = d3.select('.korea-map').append('text')
         .attr('x', 100)
         .attr('y', 80)
         .attr('fill', 'white')
         .attr('text-anchor', 'left')
-        .style('font-size', 15);
+        .style('font-size', 15)
+        .style('color', 'rgba(255, 0, 0, 0.801)')
+        .style('font-weight', 'bold')
+        .attr('class', 'kmapText2');
       
-      var diffText = svgKOR.append('text')
+      var diffText = d3.select('.korea-map').append('text')
         .attr('x', 100)
         .attr('y', 120)
         .attr('fill', 'white')
         .attr('text-anchor', 'left')
-        .style('color', 'gray')
-        .style('font-size', 12);
+        .style('color', '#BEBDBF')
+        .style('font-size', 12)
+        .attr('class', 'kmapText3');
 
       function mouseOver(d, i) {
         this.parentNode.appendChild(this);//the path group is on the top with in its parent group
@@ -978,7 +1089,7 @@ d3.json('korea.json')
         console.log(temp_text.sum)
         console.log(temp_text.diff)
         sumText.text(temp_text.sum);
-        diffText.text(temp_text.diff);
+        diffText.text('+' + temp_text.diff);
       }
 
       function mouseLeave(d) {
@@ -992,55 +1103,362 @@ d3.json('korea.json')
 });
 
 const screenHeight = window.innerHeight;
+var okayToProceed1 = true;
+var okayToProceed1_1 =true;
+var okayToProceed2 = true;
+var okayToProceed3 = true;
+var okayToProceed4 = true;
+var okayToProceed5 = true;
+var okayToProceed6 = true;
+
+var okayToProceedFO = true;
+
+
+var toggleWuhanCircleR = false;
+var circleOnce = false;
+var circle1, circle2;
+
+var repeatOn = true;
+
+var foreign, div1, div2, plane;
+
+const storyCons = document.getElementsByClassName('story-container');
+
 window.addEventListener('wheel', function(e) {
-
-  if (window.scrollY < screenHeight*7) {
-    
-  }
-
+  
   console.log(window.scrollY);
-  // if (window.scrollY < screenHeight) {
-  //   console.log('TITLE');
-  // }
+    // 한국만 확대
+    if (window.scrollY > screenHeight && window.scrollY < screenHeight ) {
+      
+      
+      // gWRLD.transition()
+      //   .duration(2000)
+      //   .attr('transform-origin', 'center')
+      //   .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')' + ' translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : ('scale(' + 15 + ') translate(' + (width/2-projection([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projection([newMapInfo.lon, newMapInfo.lat])[1]) + ')'));
+    }
 
-  // if (window.scrollY > screenHeight && window.scrollY < screenHeight*2) {
-  //   console.log('DATE');
-  // }
+    // if (window.scrollY > screenHeight && window.scrollY < screenHeight + screenHeight/2) {
+    //   document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.5s ease-in-out forwards';
+    // }
 
-  // if (window.scrollY > screenHeight*2 && window.scrollY < screenHeight*3) {
-  //   console.log('STORY 1');
-  // }
+    if (window.scrollY > screenHeight + screenHeight/2 && window.scrollY < screenHeight*2) {
+      document.querySelector('.firstCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
 
-  // if (window.scrollY > screenHeight*3 && window.scrollY < screenHeight*4) {
-  //   console.log('STORY 2');
-  // }
+      if (okayToProceed1) {
+        okayToProceed1 = false;
+        console.log('turn gray');
+        repeatOn = false;
+        gWRLD.selectAll('path')
+          .transition()
+          .duration(1000)
+          .style('stroke', '#66687375');
+          // .style('fill', '#666873');
+        d3.select('#korea')
+          .transition()
+          .delay(500)
+          .duration(1000)
+          .style('fill', 'transparent')
+          .style('stroke', '#66687375')
+          // .on('end', () => okayToProceed = true);
 
-  // if (window.scrollY > screenHeight*4 && window.scrollY < screenHeight*5) {
-  //   console.log('STORY 3');
-  // }
+        console.log('to China')
+        gWRLD.transition()
+          .duration(1000)
+          .attr('transform-origin', 'center')
+          .attr('transform', 'scale(8)  translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')');
+      }
+    }
 
-  // if (window.scrollY > screenHeight*5 && window.scrollY < screenHeight*6) {
-  //   console.log('STORY 4');
-  // }
+    if (window.scrollY > screenHeight*2 + 300 && window.scrollY < screenHeight*3) {
+      document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
+    }
 
-  // if (window.scrollY > screenHeight*6 && window.scrollY < screenHeight*7) {
-  //   console.log('STORY 5');
-  // }
+    if (window.scrollY > screenHeight*2 && window.scrollY < screenHeight*3) {
 
-  if (window.scrollY > screenHeight*7 && window.scrollY < screenHeight*9) {
+      
+    } 
+
+    // if (window.scrollY > screenHeight + 200) {
+    //   document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.5s ease-in-out forwards';
+    // }
+
+    
+    if (window.scrollY > screenHeight*3 - 300 && window.scrollY < screenHeight*4) {
+      console.log('zoom wu');
+      if (okayToProceed2) {
+        okayToProceed2 = false;
+        //1
+        storyCons[0].lastChild.animate([
+          {width: '0px'},
+          {width: storyCons[0].children[0].children[0].getClientRects()[0].width + 'px'}
+        ], {
+          // delay: 500,
+          duration: 500,
+          easing: 'ease-in-out',
+          fill: 'forwards',
+          // interations: Infinity
+        });
+
+      // this.setTimeout(() => okayToProceed = true, 2000)
+
+      d3.select('#china')
+        .transition()
+        .style('stroke', '#6D7BA6');
+
+        console.log('wuhan circle');
+      gWRLD.transition()
+        .duration(1000)
+        .attr('transform-origin', 'center')
+        .attr('transform', 'scale(10)  translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')');
+
+      if (!circleOnce) {
+        circleOnce = true;
+
+        circle1 = svg.append('g').selectAll('svg')
+        .data([0])
+        .enter()
+        .append('circle')
+        .attr('cx', width/2)
+        .attr('cy', height/2)
+        .attr('r', 5)
+        .attr('fill', '#8A8EA6')
+        .attr('opacity', 0);
+
+        circle1
+        .transition()
+        .delay(1500)
+        .attr('opacity', 0.5);
+
+        circle2 = svg.append('g').selectAll('svg')
+        .data([1])
+        .enter()
+        .append('circle')
+        .attr('cx', width/2)
+        .attr('cy', height/2)
+        .attr('r', 5)
+        .attr('fill', '#8A8EA6')
+        .attr('opacity', 0);
+
+        circle2
+        .transition()
+        .delay(1500)
+        .ease(d3.easeQuadIn)
+        .duration(1000)
+        .attr('opacity', 0.5)
+        .attr('r', 12)
+        .transition()
+        .duration(800)
+        .ease(d3.easeQuadOut)
+        .attr('opacity', 0)
+        .on('end', repeatCircle);
+        
+        function repeatCircle(d) {
+          toggleWuhanCircleR = !toggleWuhanCircleR;
+          d3.select(this)
+            .attr('r', 5)
+            .transition()
+            .ease(d3.easeQuadIn)
+            .duration(800)
+            .attr('opacity', 0.5)
+            .attr('r', 12)
+            .transition()
+            .ease(d3.easeQuadOut)
+            .duration(500)
+            .attr('opacity', 0)
+            .on('end', repeatCircle);
+            toggleWuhanCircleR = !toggleWuhanCircleR;
+        }
+      }
+      }
+    } 
+    
+    if (window.scrollY > screenHeight*4 - 300 && window.scrollY < screenHeight*5) {
+      if (okayToProceed3) {
+        okayToProceed3 = false;
+        //2
+      storyCons[1].lastChild.animate([
+        {width: '0px'},
+        {width: storyCons[1].children[0].children[0].getClientRects()[0].width + 'px'}
+      ], {
+        // delay: 500,
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+        // interations: Infinity
+      });
+
+
+      console.log('plane');
+      foreign = svg.append('foreignObject')
+        .attr('width', 50)
+        .attr('height', 50)
+        .attr('x', width/2 - 25)
+        .attr('y', height/2 - 25)
+        .attr('opacity', 0);
+
+      div1 = foreign.append('xhtml:div');
+      div2 = div1.append('div')
+          .attr('x', 25)
+          .attr('y', 25)
+          .attr('width', 50)
+          .attr('height', 50);
+      
+      plane = div2.append('i');
+      plane.attr('x', 25)
+          .attr('y', 25)
+          .style('color', '#696969')
+          .style('font-size', '20px')
+          .attr('class', 'fas fa-plane');
+
+      foreign.transition()
+        .duration(500)
+        .attr('opacity', 1);
+
+      d3.select('#china')
+        .transition()
+        .style('stroke', '#66687375');
+          
+      console.log('fly');
+      gWRLD.transition()
+      .duration(2000)
+      .attr('transform-origin', 'center')
+      .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*4.5 + ',' + -height*4.5 + ') scale(' + 10 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : ('scale(' + 10 + ') translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')'))
+      // .on('end', () => okayToProceed = true);
+      }
+    }
+
+    if (window.scrollY > screenHeight*5 - 300 && window.scrollY < screenHeight*6) {
+      if (okayToProceed4) {
+        okayToProceed4 = false;
+        //3
+        storyCons[2].lastChild.animate([
+          {width: '0px'},
+          {width: storyCons[2].children[0].children[0].getClientRects()[0].width + 'px'}
+        ], {
+          // delay: 500,
+          duration: 500,
+          easing: 'ease-in-out',
+          fill: 'forwards',
+          // interations: Infinity
+        });
+    
+
+        foreign.transition()
+          .duration(500)
+          .attr('opacity', 0)
+          // .on('end', () => okayToProceed = true);
+      }
+    }
+
+    if (window.scrollY > screenHeight*6 - 300 && window.scrollY < screenHeight*7) {
+      if (okayToProceed5) {
+        okayToProceed5 = false;
+        //4
+        storyCons[3].lastChild.animate([
+          {width: '0px'},
+          {width: storyCons[3].children[0].children[0].getClientRects()[0].width + 'px'}
+        ], {
+          // delay: 500,
+          duration: 500,
+          easing: 'ease-in-out',
+          fill: 'forwards',
+          // interations: Infinity
+        });
+
+        d3.select('#korea')
+          .transition()
+          .style('stroke', '#6D7BA6')
+          // .on('end', () => okayToProceed = true);
+      }
+    }
+
+    if (window.scrollY > screenHeight*7 - 300 && window.scrollY < screenHeight*8) {
+      if (okayToProceed6) {
+        okayToProceed6 = false;
+        //5
+      storyCons[4].lastChild.animate([
+        {width: '0px'},
+        {width: storyCons[4].children[0].children[0].getClientRects()[0].width + 'px'}
+      ], {
+        // delay: 500,
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+        // interations: Infinity
+      });
+
+      // this.setTimeout(() => okayToProceed = false, 1000);
+
+      console.log('corona - red');
+      circle1
+        .transition()
+        .ease(d3.easeQuadIn)
+        .duration(1000)
+        .attr('fill', 'red')
+        .attr('r', 20);
+
+      circle2
+        .transition()
+        .ease(d3.easeQuadIn)
+        .duration(1000)
+        .attr('opacity', 0.5)
+        .attr('r', 100)
+        .attr('fill', 'red')
+        .transition()
+        .duration(800)
+        .ease(d3.easeQuadOut)
+        .attr('opacity', 0)
+        .on('end', repeatCircleBigger);
+
+        function repeatCircleBigger() {
+          toggleWuhanCircleR = !toggleWuhanCircleR;
+          d3.select(this)
+            .attr('r', 20)
+            .transition()
+            .ease(d3.easeQuadIn)
+            .duration(800)
+            .attr('opacity', 0.5)
+            .attr('r', 100)
+            .transition()
+            .ease(d3.easeQuadOut)
+            .duration(500)
+            .attr('opacity', 0)
+            .on('end', repeatCircleBigger);
+            toggleWuhanCircleR = !toggleWuhanCircleR;
+        }
+      }
+    }
+
+  if (window.scrollY > screenHeight*7 + 300 ) {
+    if (okayToProceedFO) {
+      okayToProceedFO = false;
+      svg.transition().duration(1000).style('opacity', 0);
+    }
+  }
+  if (window.scrollY > screenHeight*8 && window.scrollY < screenHeight*10) {
     console.log('VIDEO');
   }
 
-  if (window.scrollY > screenHeight*9 && window.scrollY < screenHeight*10) {
+  if (window.scrollY > screenHeight*10 + screenHeight/2 && window.scrollY < screenHeight*11) {
     console.log('TEXT 1');
+    document.querySelector('.secondCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
   }
 
-  if (window.scrollY > screenHeight*10 && window.scrollY < screenHeight*11) {
-    console.log('TEXT 2');
+  if (window.scrollY > screenHeight*11 + 300 && window.scrollY < screenHeight*12) {
+    document.querySelector('.secondCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
+  }
+
+  if (window.scrollY > screenHeight*12 + screenHeight/2 && window.scrollY < screenHeight*13) {
+    document.querySelector('.thirdCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
+  }
+
+  if (window.scrollY > screenHeight*13 + 300 && window.scrollY < screenHeight*14) {
+    document.querySelector('.thirdCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
   }
 
   if (window.scrollY > screenHeight*11 && window.scrollY < screenHeight*12) {
     console.log('VERTICAL CHART');
+
   }
 
   if (window.scrollY > screenHeight*12 && window.scrollY < screenHeight*13) {
@@ -1067,3 +1485,155 @@ window.addEventListener('wheel', function(e) {
     console.log('LAST');
   }
 });
+
+
+
+var worldMap, geojsonWRLD, center, korea;
+
+function loadDataMap(cb) {
+  console.log('loadDataMap');
+  d3.json('world.json')
+      .then(function(data) {
+        cb(data);
+      });       
+}
+
+
+loadDataMap(function(wrldMap) {
+  console.log('cb');
+
+  // 데이터 가져오기
+  worldMap = wrldMap;
+  geojsonWRLD = topojson.feature(worldMap, worldMap.objects.countries);
+  center = d3.geoCentroid(geojsonWRLD);
+
+  // 한국 지도
+  korea = geojsonWRLD.features.find(element => element.id === '410');
+
+  basicSetting();
+});
+
+var projectionWRLD, pathWRLD, bounds, gWRLD;
+// 기본 설정
+function basicSetting() {
+  projectionWRLD = d3.geoMercator()
+    .scale(1)
+    .translate([0, 0]);
+  pathWRLD = d3.geoPath(projectionWRLD);
+  gWRLD = svg.append('g').attr('class', 'mapg');
+  console.log('got gwrld');
+  bounds = pathWRLD.bounds(geojsonWRLD);
+  const widthScale = (bounds[1][0] - bounds[0][0]) / width; 
+  const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
+  const scaleWRLD = 1 /Math.max(widthScale, heightScale); //축척
+  const xoffset = width/2 - scaleWRLD * (bounds[1][0] + bounds[0][0])/2; 
+  const yoffset = height/2 - scaleWRLD * (bounds[1][1] + bounds[0][1])/2; 
+  const offset = [xoffset, yoffset];
+  projectionWRLD.scale(scaleWRLD).translate(offset);
+
+  fillKorea(gWRLD, geojsonWRLD, pathWRLD);
+}
+
+
+function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
+  console.log('........................');
+  console.log(gWRLD);
+  console.log(geojsonWRLD);
+  console.log('........................');
+  // 지도 그리고 한국 배경 색 트랜지션 반복
+  var toggleKoreaFillColor = false;
+
+  gWRLD
+  .selectAll('path').data(geojsonWRLD.features)
+  .enter().append('path')
+  .attr('class', 'country')
+  .attr('d', pathWRLD)
+  .attr('id', d => {
+    if (d.id === '410') return 'korea';
+    else if (d.id === '156') {
+      return 'china';
+    }
+  })
+  .transition()
+  .duration(2000)
+  .style('fill', d => {
+      toggleKoreaFillColor = !toggleKoreaFillColor;
+      if (d.id === '410') {
+          return '#F21905';
+      }
+      // else return 'rgba(245, 245, 245, 0.1)';
+  })
+  .style('stroke', d => {
+      if (d.id === '410') {
+          return '#F21905';
+      }
+  })
+  .on('end', repeat);
+
+  function repeat(d) {
+      if (d.id === '410' && repeatOn) {
+          d3.select(this)
+          .transition()
+          .duration(1000)
+          .ease(d3.easeQuadIn)
+          .style('fill', toggleKoreaFillColor ? 'transparent' : '#F21905')
+          .style('stroke', toggleKoreaFillColor ? '#696969' : '#F21905')
+          .on('end', repeat);
+          toggleKoreaFillColor = !toggleKoreaFillColor;
+      }
+  }
+
+  console.log('ZOOM KOREA');
+  gWRLD.transition()
+    .duration(2000)
+    .attr('transform-origin', 'center')
+    // .attr('transform', 'scale(5)');
+    .attr('transform', 'scale(15)  translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+}
+
+
+const titleCon = document.querySelector('.title-container');
+titleCon.animate([
+  {opacity: 0},
+  {opacity: 1}
+], {
+  delay: 1000,
+  duration: 1500,
+  fill: 'forwards',
+})
+
+// red-text 줄긋기
+var redText = document.querySelector('.red-text');
+var underline = document.createElement('div');
+underline.setAttribute('id', 'underline');
+// underline.style.width = redText.getClientRects()[0].width + 'px';
+underline.style.top = redText.getClientRects()[0].y + redText.getClientRects()[0].height + 'px';
+underline.style.left = redText.getClientRects()[0].x + 'px';
+
+underline.animate([
+  {width: '0px'},
+  {width: redText.getClientRects()[0].width + 'px'}
+], {
+  delay: 1500,
+  duration: 500,
+  easing: 'ease-in-out',
+  fill: 'forwards',
+  // interations: Infinity
+});
+
+titleCon.appendChild(underline);
+
+for (let story of storyCons) {
+  // black-story-text 줄긋기
+  // let blackText = document.querySelector('.black-story-text');
+  let blackText = story.children[0].children[0];
+  let underlineBlack = document.createElement('div');
+  underlineBlack.setAttribute('id', 'underlineBlack');
+  // underline.style.width = redText.getClientRects()[0].width + 'px';
+  underlineBlack.style.top = window.scrollY + blackText.getClientRects()[0].y + blackText.getClientRects()[0].height + 'px';
+  underlineBlack.style.left = blackText.getClientRects()[0].x + 'px';
+
+  story.appendChild(underlineBlack);
+}
+
+
