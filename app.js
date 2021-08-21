@@ -1,9 +1,26 @@
-const width = window.innerWidth/2;
-const height = window.innerHeight;
+// 전체 화면 크기 설정
+var width, height;
 
-const svg = d3.select('div').append('svg').attr('width', width).attr('height', height).attr('cursor', 'pointer').attr('class', 'svgG');
+//모바일 or 태블릿
+if (matchMedia("screen and (max-width: 800px)").matches) {
+  width = window.innerWidth;
+  height = window.innerHeight;
+}
 
-// 이동할 나라들
+// 데스크탑
+else {
+  width = window.innerWidth/2;
+  height = window.innerHeight;
+}
+
+// 지도 트랜지션을 위한 svg
+var svg = d3.select('div')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
+  .attr('class', 'svgG');
+
+// 방문할 나라들의 배열
 const mapInfo = [
     {
         "name":"South Korea",
@@ -22,17 +39,133 @@ const mapInfo = [
     }
 ];
 
-// 한국만
+// 한국
 const newMapInfo = {
     "name":"South Korea",
     "lat" : "37.532600",
     "lon" : "127.024612"
 };
 
+// 세계 지도 가져오기
+var worldMap, geojsonWRLD, center, korea;
+
+// json 파일 불러오기
+function loadDataMap(cb) {
+  d3.json('world.json')
+      .then(function(data) {
+        cb(data); // json 파일의 데이터를 가지고 변수로 주어진 함수 실행
+      });       
+}
+
+
+loadDataMap(function(wrldMap) {
+  // 데이터 가져오기
+  worldMap = wrldMap;
+
+  // topojson -> geojson
+  geojsonWRLD = topojson.feature(worldMap, worldMap.objects.countries);
+  center = d3.geoCentroid(geojsonWRLD); // 지도의 중심
+
+  // 한국 지도
+  korea = geojsonWRLD.features.find(element => element.id === '410');
+
+  // 기본 설정
+  basicSetting();
+});
+
+var projectionWRLD, pathWRLD, bounds, gWRLD;
+// 기본 설정
+function basicSetting() {
+  // 메카르토르 도법으로 그리기
+  projectionWRLD = d3.geoMercator()
+    .scale(1)
+    .translate([0, 0]);
+
+  // SVG Path 생성
+  pathWRLD = d3.geoPath(projectionWRLD);  
+
+  gWRLD = svg.append('g').attr('class', 'mapg');
+
+  // bounding box
+  bounds = pathWRLD.bounds(geojsonWRLD);
+  const widthScale = (bounds[1][0] - bounds[0][0]) / width;
+  const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
+  const scaleWRLD = 1 /Math.max(widthScale, heightScale); //축척
+  // 중점 - path 크기의 반 * Scale 조정한 정도
+  const xoffset = width/2 - scaleWRLD * (bounds[1][0] + bounds[0][0])/2; 
+  const yoffset = height/2 - scaleWRLD * (bounds[1][1] + bounds[0][1])/2; 
+  const offset = [xoffset, yoffset];
+  projectionWRLD.scale(scaleWRLD).translate(offset);
+
+  // path 그리고 색상 설정
+  fillKorea(gWRLD, geojsonWRLD, pathWRLD, scaleWRLD);
+}
+
+
+function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
+  var toggleKoreaFillColor = false;
+
+  // 지도 path 그리기
+  gWRLD
+  .selectAll('path').data(geojsonWRLD.features)
+  .enter().append('path')
+  .attr('class', 'country')
+  .attr('d', pathWRLD)  // path의 모양 정의
+  .attr('id', d => {
+    if (d.id === '410') return 'korea';
+    else if (d.id === '156') {
+      return 'china';
+    }
+  })
+  .transition()
+  .duration(2000)
+  .style('fill', d => {
+      toggleKoreaFillColor = !toggleKoreaFillColor;
+      if (d.id === '410') {
+          return '#F21905';
+      }
+  })
+  .style('stroke', d => {
+      if (d.id === '410') {
+          return '#F21905';
+      }
+  })
+  .on('end', repeat);
+
+  // 지도 색상 변경 animation 반복
+  function repeat(d) {
+      if (d.id === '410' && repeatOn) {
+          d3.select(this)
+          .transition()
+          .duration(1000)
+          .ease(d3.easeQuadIn)
+          .style('fill', toggleKoreaFillColor ? 'transparent' : '#F21905')
+          .style('stroke', toggleKoreaFillColor ? '#696969' : '#F21905')
+          .on('end', repeat);
+          toggleKoreaFillColor = !toggleKoreaFillColor;
+      }
+  }
+
+  // (8.19) 수정
+  // 우리나라로 이동 및 Zoom
+
+  // Safari, Chrome 나눠서 생각했는데,
+  // 그냥 다 기준을 left top으로 맞춰놓고 하면 된다
+  // Safari transform-origin 설정이 안된다는 게 문제였는데,
+  // 그냥 그걸 활용하면 되는 거였다.
+  gWRLD.transition()
+    .duration(2000)
+    .attr('transform-origin', '')
+    .attr('transform', 'translate(' + width/2 + ', ' + height/2 + ') scale(15) translate(' + -(projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ', ' + -(projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+}
+
+
 // 브라우저 체크
 function browserCheck(){ 
+  // 브라우저 정보 담겨있는 user agent 얻기 (transform-origin 이유로)
 	const agt = navigator.userAgent.toLowerCase(); 
-	if (agt.indexOf("chrome") != -1) return 'Chrome'; 
+  // 크롬 모바일에 safari 포함, 추가로 'mobile' 체크하기
+	if (agt.indexOf("chrome") != -1 || agt.indexOf("mobile") != -1) return 'Chrome'; 
 	if (agt.indexOf("opera") != -1) return 'Opera'; 
 	if (agt.indexOf("staroffice") != -1) return 'Star Office'; 
 	if (agt.indexOf("webtv") != -1) return 'WebTV'; 
@@ -56,10 +189,13 @@ function browserCheck(){
 	} 
 }
 
+
 // 확진자 수 세로 차트
 const verticalBarGraph = d3.select('.vertical-statistics-container')
     .append('svg')
-    .attr('width', width*2)
+    // .attr('width', width*2)
+    // 수정 (8.19)
+    .attr('width', width)
     .attr('height', height);
 
 // 기준선 만들기
@@ -130,6 +266,7 @@ const btn = verticalBarGraph
         toggleBtn = !toggleBtn;
     });
 
+
 const btnRect = btn.append('rect')
     .attr('x', width-100)
     .attr('y', 50)
@@ -141,6 +278,7 @@ const btnRect = btn.append('rect')
     .attr('ry', 25)
     .attr('stroke-width', 1)
     .style('cursor', 'pointer');
+
 
 const btnT = btn.append('text')
     .text('확진자 수 통계')
@@ -182,21 +320,21 @@ btnT.on('mouseover', function() {
   });
 
 // 시간 흐름(tween으로 만들어야 한다)
-const timepass = verticalBarGraph.append('g');
-const timepassRect = timepass.append('rect')
-    .attr('x', width*2-200)
-    .attr('y', 50)
-    .attr('width', 300)
-    .attr('height', 50);
+// const timepass = verticalBarGraph.append('g');
+// const timepassRect = timepass.append('rect')
+//     .attr('x', width*2-200)
+//     .attr('y', 50)
+//     .attr('width', 300)
+//     .attr('height', 50);
 
-timepass.append('text')
-    .text(0)
-    .attr('x', width*2 - 100)
-    .attr('y', 85)
-    .attr('text-anchor', 'end')
-    .style('font-size', 15)
-    .style('fill', 'white')
-    .text('2020년 1월 20일 ~ 2021년 8월 2일');
+// timepass.append('text')
+//     .text(0)
+//     .attr('x', width*2 - 100)
+//     .attr('y', 85)
+//     .attr('text-anchor', 'end')
+//     .style('font-size', 15)
+//     .style('fill', 'white')
+//     .text('2020년 1월 20일 ~ 2021년 8월 2일');
 
 
 // const monthText = timepass.append('text')
@@ -264,8 +402,12 @@ timepass.append('text')
 
 
 // Line 차트 생성
+// (8.19) 수정
+// var margin = {top: 10, right: 30, bottom: 30, left: 60},
+//     w = width*1.5 - margin.left - margin.right,
+//     h = height*0.5 - margin.top - margin.bottom;
 var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    w = width*1.5 - margin.left - margin.right,
+    w = width*0.8 - margin.left - margin.right,
     h = height*0.5 - margin.top - margin.bottom;
 
 var svg_t = d3.select(".tooltip-statistics-container")
@@ -325,6 +467,7 @@ d3.csv("accum.csv")
     .catch( function(err) {console.log(err)});
 
 
+
 // 3D GLOBE EXAMPLE CODE
 // 참고: https://jorin.me/d3-canvas-globe-hover/
 
@@ -332,20 +475,25 @@ d3.csv("accum.csv")
 // Configuration
 //
 
-// ms to wait after dragging before auto-rotating
-var rotationDelay = 3000
-// scale of the globe (not the canvas element)
-var scaleFactor = 0.65
-// autorotation speed
-var degPerSec = 6
-// start angles
-var angles = { x: -20, y: 40, z: 0}
+// 회전 정지 시간
+var rotationDelay = 3000;
+
+// 지구 크기
+var scaleFactor = 1;
+
+// 회전 속도 (각도)
+var degPerSec = 6;
+
+// 초기 각도 설정
+var angles = { x: -20, y: 40, z: 0};
 
 // 색상 설정
-var colorWater = 'black'
-var colorLand = 'white'
-var colorGraticule = 'darkgray'
-var colorCountry = 'rgb(0, 193, 0)'
+var colorWater = 'black';
+var colorLand = 'white';
+var colorGraticule = 'darkgray';
+var colorCountry = 'rgb(0, 193, 0)';
+
+// 백신접종률 나타내는 텍스트
 var currentPercent = d3.select('#percent');
 
 
@@ -353,91 +501,111 @@ var currentPercent = d3.select('#percent');
 // Handler
 //
 
-function enter(country) {
+// 마우스 or 터치에 해당 되는 국가의 데이터 불러오기
+function enter(country) {  //parameter country 지움 수정
+  // 해당 되는 국가 찾기
   var country = countryList.find(function(c) {
     return parseInt(c.id, 10) === parseInt(country.id, 10)
   })
-  // 데이터 가지고 마우스 위치에 따라 텍스트 내용 변경
-  current.transition()
-    .duration(50)
-    .attr('opacity', 0)
-    .transition()
-    .duration(50)
-    .text(country && country.name || '')
-    .attr('opacity', 1);
+
+  // 국가 이름, 백신접종률 변경
+  current
+    .text(country && country.name || '');
   currentPercent
-    .transition()
-    .duration(50)
-    .attr('opacity', 0)
-    .transition()
-    .duration(50)
-    .text(country && country.fullyVaccinated || '')
-    .attr('opacity', 1);
+    .text(country && country.fullyVaccinated || '');
 }
 
 // 텍스트 초기화
 function leave(country) {
-  current.transition()
-  .duration(500).text('')
-  currentPercent.transition()
-  .duration(500).text('');
+  current.text('')
+  currentPercent.text('');
 }
 
 //
 // Variables
 //
 
-var current = d3.select('#current')
-var canvas = d3.select('#globe')
-var context = canvas.node().getContext('2d')
-var water = {type: 'Sphere'}
-var projection = d3.geoOrthographic().precision(0.1)
-var graticule = d3.geoGraticule10()
-var path = d3.geoPath(projection).context(context)
+var current = d3.select('#current'); // 국가이름
+var canvas = d3.select('#globe');
+
+var context = canvas.node().getContext('2d');  // canvas context 설정
+var water = {type: 'Sphere'};
+// precision : artificial resampling (자연스럽고 정확한 resampling?)
+var projection = d3.geoOrthographic().precision(0.1);
+var graticule = d3.geoGraticule10(); // 격자선 생성
+var path = d3.geoPath(projection).context(context); // SVG path 생성
+
+// ?
 var v0 // Mouse position in Cartesian coordinates at start of drag gesture.
 var r0 // Projection rotation as Euler angles at start.
 var q0 // Projection rotation as versor at start.
-var lastTime = d3.now()
-var degPerMs = degPerSec / 1000
-var cwidth, cheight
-var land, countries
-var countryList
-var autorotate, now, diff, roation
-var currentCountry
+
+var lastTime = d3.now();
+var degPerMs = degPerSec / 1000;
+var cwidth, cheight;
+var land, countries;
+var countryList;
+var autorotate, now, diff, roation;
+var currentCountry;
 
 //
 // Functions
 //
 
 function setAngles() {
-  var rotation = projection.rotate()
-  rotation[0] = angles.y
-  rotation[1] = angles.x
-  rotation[2] = angles.z
-  projection.rotate(rotation)
+  var rotation = projection.rotate();
+  rotation[0] = angles.y;
+  rotation[1] = angles.x;
+  rotation[2] = angles.z;
+  projection.rotate(rotation);  // three-axis rotation
 }
 
+
 function scale() {
-  cwidth = document.documentElement.clientWidth
-  cheight = document.documentElement.clientHeight
-  canvas.attr('width', cwidth).attr('height', cheight)
+  // 화면 내부 크기
+  cwidth = document.documentElement.clientWidth;
+  cheight = document.documentElement.clientHeight;
+  canvas.attr('width', cwidth).attr('height', cheight);
+
+  // 기본 배치
   projection
-    .scale((scaleFactor * Math.min(cwidth, cheight)) / 2)
-    .translate([cwidth / 2, cheight / 2])
+    .scale((scaleFactor * Math.min(cwidth, cheight))/2)
+    .translate([cwidth / 2, cheight / 2]);
+
+  // 화면에 그리기
   render()
 }
 
+// globe 회전
 function startRotation(delay) {
-  autorotate.restart(rotate, delay || 0)
+  autorotate.restart(rotate, delay || 0);
 }
 
+// globe 회전 정지
 function stopRotation() {
   autorotate.stop()
 }
 
+// globe 드래그
 function dragstarted(e) {
   console.log('dragstarted');
-  v0 = versor.cartesian(projection.invert(d3.pointer(e, this)));
+  console.log(e.sourceEvent.type === 'touchstart');
+  // console.log(e.sourceEvent.changedTouches[0]);
+  // console.log(e.changedTouches[0]);
+
+  // versor : 마우스로 globe 회전을 지원하는 라이브러리
+  // 마우스 위치의 spherical coordinates 구해서 해당 위치로 이동
+
+  // 터치 안되는 문제가 있었는데(모바일),
+  // document 자세히 보니 pointer는 touchevent 가 아니라 touch를 받고 있었고,
+  // touchevent 안에 touch가 있어서 그걸로 했더니 되긴 된다.
+  console.log(this);
+  if (e.sourceEvent.type === 'touchstart') {
+    v0 = versor.cartesian(projection.invert(d3.pointer(e.sourceEvent.changedTouches[0], this)));  
+  }
+  else {
+    v0 = versor.cartesian(projection.invert(d3.pointer(e)));
+  }
   r0 = projection.rotate()
   q0 = versor(r0)
   stopRotation()
@@ -445,7 +613,13 @@ function dragstarted(e) {
 
 function dragged(e) {
   console.log('dragged');
-  var v1 = versor.cartesian(projection.rotate(r0).invert(d3.pointer(e, this)));
+  // 중첩됐을 때 효과가 안났다. (터치랑 스크롤)
+  if (e.sourceEvent.type === 'touchmove') {
+    var v1 = versor.cartesian(projection.rotate(r0).invert(d3.pointer(e.sourceEvent.changedTouches[0], this)));  
+  }
+  else {
+    var v1 = versor.cartesian(projection.rotate(r0).invert(d3.pointer(e, this)));
+  }
   var q1 = versor.multiply(q0, versor.delta(v0, v1))
   var r1 = versor.rotation(q1)
   projection.rotate(r1)
@@ -458,7 +632,10 @@ function dragended() {
 }
 
 function render() {
+  // 캔버스 화면 지우기 (전체)
   context.clearRect(0, 0, cwidth, cheight)
+
+  // 색상 설정
   fill(water, colorWater)
   stroke(graticule, colorGraticule)
   fill(land, colorLand)
@@ -561,11 +738,12 @@ setAngles()
 
 canvas
   .call(d3.drag()
+    .touchable(true)
     .on('start', dragstarted)
     .on('drag', dragged)
     .on('end', dragended)
-   )
-  .on('mousemove', mousemove)
+   );
+canvas.on('mousemove', mousemove);
 
 loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)
@@ -581,25 +759,36 @@ loadData(function(world, cList) {
 
 
 // KOREA MAP
-const ww = window.innerWidth/2, hh = window.innerHeight;
+var ww, hh;
+
+// 모바일에서 지도 크기 크게
+if (matchMedia("screen and (max-width: 800px)").matches) {
+  ww = window.innerWidth*0.7;
+  hh = window.innerHeight*0.7;
+}
+else {
+  ww = window.innerWidth/2;
+  hh = window.innerHeight;
+}
+
 const svgKOR = d3.select('.korea-map')
   .append('svg')
   .attr('width', ww)
   .attr('height', hh)
   .style('position', 'absolute')
-  .style('right', 0);
+  .style('right', 0)
+  .style('bottom', 0);
 
 
 
 // 우리나라 지도
 d3.json('korea.json')
   .then(data => {
+    // 확진자 수 데이터
     d3.csv('korea_code_sum_diff.csv')
         .then(function(infoData) {
       const koreaMap = data;
-      console.log(koreaMap);
       const geojson = topojson.feature(koreaMap, koreaMap.objects.skorea_provinces_2018_geo);
-      const center = d3.geoCentroid(geojson);
 
       const k_projection = d3.geoMercator()
         .scale(1)
@@ -621,6 +810,7 @@ d3.json('korea.json')
       const colorScale = d3.scaleLinear().domain([0, 10000, 50000, 100000])
       .range(['white', 'rgb(255, 100, 100)', 'rgb(255, 50, 50)']);
 
+      // 지도 그리기
       g
         .selectAll('path')
         .data(geojson.features)
@@ -630,6 +820,7 @@ d3.json('korea.json')
         .attr('d', mappath)
         .attr('stroke', 'transparent')
         .attr('fill', function(d) {
+          // infoData에 나온 지역들의 sum에 따라 색상 지정
           const temp_fill = infoData.find(dta => dta.code === d.properties.code);
           return colorScale(parseInt(temp_fill.sum.replace(',', ''), 10));
         })
@@ -674,9 +865,11 @@ d3.json('korea.json')
         .attr('class', 'kmapText3');
 
       function mouseOver(d, i) {
-        this.parentNode.appendChild(this);//the path group is on the top with in its parent group
+        // 선이 가려지지 않게 새로 append
+        this.parentNode.appendChild(this);
         d3.select(this).style('stroke', 'black');
 
+        // 텍스트 내용 지정
         const temp_text = infoData.find(d => d.code === i.properties.code);
         currentText.text(temp_text.area);
         sumText.text(temp_text.sum);
@@ -693,6 +886,8 @@ d3.json('korea.json')
     });
 });
 
+
+// 화면 크기
 const screenHeight = window.innerHeight;
 
 // 한번만 수행하기 위해
@@ -710,496 +905,27 @@ var okayToProceedHover = true;
 
 var toggleWuhanCircleR = false;
 var circleOnce = false;
-var circle1, circle2;
-
 var repeatOn = true;
+
+var circle1, circle2;
 
 var foreign, div1, div2, plane;
 
 
-var feverCon = document.querySelector('.fever');
-var redText2 = document.querySelector('.red-text2');
+var feverCon = document.querySelector('.fever');  // 열 38도
+var redText2 = document.querySelector('.red-text2');  
+const storyCons = document.getElementsByClassName('story-container'); // 동선
 var underline2 = document.createElement('div');
 underline2.setAttribute('id', 'underline2');
 underline2.style.top = window.scrollY + redText2.getClientRects()[0].y + redText2.getClientRects()[0].height - 5 + 'px';
 underline2.style.left = redText2.getClientRects()[0].x + 'px';
 feverCon.appendChild(underline2);
 
-const storyCons = document.getElementsByClassName('story-container');
 
-window.addEventListener('wheel', function(e) {
-  
-  console.log(window.scrollY);
-    // 한국만 확대
-    if (window.scrollY > 0 && window.scrollY < screenHeight) {
-      document.querySelector('#iconArrow').style.opacity = 0;
-    }
+// scroll, touch 모두에 대응하기 위해 함수로 변경
+window.addEventListener('wheel', handleScroll);
 
-    if (window.scrollY > screenHeight + screenHeight/2 && window.scrollY < screenHeight*2 && e.deltaY > 0) {
-      document.querySelector('.firstCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
-
-      if (okayToProceed1) {
-        okayToProceed1 = false;
-        repeatOn = false;
-        gWRLD.selectAll('path')
-          .transition()
-          .duration(1000)
-          .style('stroke', '#66687375');
-
-        d3.select('#korea')
-          .transition()
-          .delay(500)
-          .duration(1000)
-          .style('fill', 'transparent')
-          .style('stroke', '#66687375')
-
-        gWRLD.transition()
-          .duration(1000)
-          .attr('transform-origin', 'center')
-          .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*3.5 + ',' + -height*3.5 + ') scale(' + 8 + ')' + ' translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[0].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')') : 'scale(8)  translate(' + (width/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')');
-      }
-    }
-
-    if (window.scrollY > screenHeight*2 + 300 && window.scrollY < screenHeight*3 && e.deltaY > 0) {
-      document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
-    }
-
-    
-    if (window.scrollY > screenHeight*3 - 300 && window.scrollY < screenHeight*4 && e.deltaY > 0) {
-      if (okayToProceed2) {
-        okayToProceed2 = false;
-        //1
-        storyCons[0].lastChild.animate([
-          {width: '0px'},
-          {width: storyCons[0].children[0].children[0].getClientRects()[0].width + 'px'}
-        ], {
-          duration: 500,
-          easing: 'ease-in-out',
-          fill: 'forwards',
-        });
-
-      d3.select('#china')
-        .transition()
-        .style('stroke', '#6D7BA6');
-
-      gWRLD.transition()
-        .duration(1000)
-        .attr('transform-origin', 'center')
-        .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*4.5 + ',' + -height*4.5 + ') scale(' + 10 + ')' + ' translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')') : 'scale(10)  translate(' + (width/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ',' + (height/2-projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')');
-
-      if (!circleOnce) {
-        circleOnce = true;
-
-        circle1 = svg.append('g').selectAll('svg')
-        .data([0])
-        .enter()
-        .append('circle')
-        .attr('cx', width/2)
-        .attr('cy', height/2)
-        .attr('r', 10)
-        .attr('fill', 'white')
-        .attr('opacity', 0);
-
-        circle1
-        .transition()
-        .delay(1000)
-        .duration(1000)
-        .attr('opacity', 0.5);
-
-        circle2 = svg.append('g').selectAll('svg')
-        .data([1])
-        .enter()
-        .append('circle')
-        .attr('cx', width/2)
-        .attr('cy', height/2)
-        .attr('r', 10)
-        .attr('fill', 'white')
-        .attr('opacity', 0);
-
-        circle2
-        .transition()
-        .delay(1000)
-        .ease(d3.easeQuadIn)
-        .duration(1000)
-        .attr('opacity', 0.5)
-        .attr('r', 20)
-        .transition()
-        .duration(800)
-        .ease(d3.easeQuadOut)
-        .attr('opacity', 0)
-        .on('end', repeatCircle);
-        
-        function repeatCircle(d) {
-          toggleWuhanCircleR = !toggleWuhanCircleR;
-          d3.select(this)
-            .attr('r', 10)
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(800)
-            .attr('opacity', 0.5)
-            .attr('r', 20)
-            .transition()
-            .ease(d3.easeQuadOut)
-            .duration(500)
-            .attr('opacity', 0)
-            .on('end', repeatCircle);
-            toggleWuhanCircleR = !toggleWuhanCircleR;
-        }
-      }
-      }
-    } 
-    
-    if (window.scrollY > screenHeight*4 - 300 && window.scrollY < screenHeight*5 && e.deltaY > 0) {
-      if (okayToProceed3) {
-        okayToProceed3 = false;
-        //2
-      storyCons[1].lastChild.animate([
-        {width: '0px'},
-        {width: storyCons[1].children[0].children[0].getClientRects()[0].width + 'px'}
-      ], {
-        duration: 500,
-        easing: 'ease-in-out',
-        fill: 'forwards',
-      });
-
-
-      console.log('plane');
-      foreign = svg.append('foreignObject')
-        .attr('width', 50)
-        .attr('height', 50)
-        .attr('x', width/2 - 25)
-        .attr('y', height/2 - 25)
-        .attr('opacity', 0);
-
-      div1 = foreign.append('xhtml:div');
-      div2 = div1.append('div')
-          .attr('x', 25)
-          .attr('y', 25)
-          .attr('width', 50)
-          .attr('height', 50);
-      
-      plane = div2.append('i');
-      plane.attr('x', 25)
-          .attr('y', 25)
-          .style('color', 'white')
-          .style('font-size', '20px')
-          .attr('class', 'fas fa-plane');
-
-      foreign.transition()
-        .duration(500)
-        .attr('opacity', 1);
-
-      d3.select('#china')
-        .transition()
-        .style('stroke', '#66687375');
-          
-      console.log('fly');
-      gWRLD.transition()
-      .duration(2000)
-      .attr('transform-origin', 'center')
-      .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*4.5 + ',' + -height*4.5 + ') scale(' + 10 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : ('scale(' + 10 + ') translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')'))
-
-      d3.select('#korea')
-          .transition()
-          .style('stroke', '#6D7BA6')
-      }
-    }
-
-    if (window.scrollY > screenHeight*5 - 300 && window.scrollY < screenHeight*6 && e.deltaY > 0) {
-      if (okayToProceed4) {
-        okayToProceed4 = false;
-
-        underline2.animate([
-          {width: '0px'},
-          {width: redText2.getClientRects()[0].width + 'px'}
-        ], {
-          delay: 500,
-          duration: 500,
-          easing: 'ease-in-out',
-          fill: 'forwards',
-        });
-
-        //3
-        storyCons[2].lastChild.animate([
-          {width: '0px'},
-          {width: storyCons[2].children[0].children[0].getClientRects()[0].width + 'px'}
-        ], {
-          duration: 500,
-          easing: 'ease-in-out',
-          fill: 'forwards',
-        });
-    
-
-        foreign.transition()
-          .duration(500)
-          .attr('opacity', 0)
-
-        d3.select('#korea')
-          .transition()
-          .style('stroke', 'red')
-      }
-    }
-
-    if (window.scrollY > screenHeight*6 - 300 && window.scrollY < screenHeight*7 && e.deltaY > 0) {
-      if (okayToProceed5) {
-        okayToProceed5 = false;
-        //4
-        storyCons[3].lastChild.animate([
-          {width: '0px'},
-          {width: storyCons[3].children[0].children[0].getClientRects()[0].width + 'px'}
-        ], {
-          duration: 500,
-          easing: 'ease-in-out',
-          fill: 'forwards',
-        });
-      }
-    }
-
-    if (window.scrollY > screenHeight*7 - 300 && window.scrollY < screenHeight*8 && e.deltaY > 0) {
-      if (okayToProceed6) {
-        okayToProceed6 = false;
-        //5
-      storyCons[4].lastChild.animate([
-        {width: '0px'},
-        {width: storyCons[4].children[0].children[0].getClientRects()[0].width + 'px'}
-      ], {
-        duration: 500,
-        easing: 'ease-in-out',
-        fill: 'forwards',
-      });
-
-      console.log('corona - red');
-      circle1
-        .transition()
-        .ease(d3.easeQuadIn)
-        .duration(1000)
-        .attr('fill', 'red')
-        .attr('r', 20);
-
-      circle2
-        .transition()
-        .ease(d3.easeQuadIn)
-        .duration(1000)
-        .attr('opacity', 0.5)
-        .attr('r', 100)
-        .attr('fill', 'red')
-        .transition()
-        .duration(800)
-        .ease(d3.easeQuadOut)
-        .attr('opacity', 0)
-        .on('end', repeatCircleBigger);
-
-        function repeatCircleBigger() {
-          toggleWuhanCircleR = !toggleWuhanCircleR;
-          d3.select(this)
-            .attr('r', 20)
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(800)
-            .attr('opacity', 0.5)
-            .attr('r', 100)
-            .transition()
-            .ease(d3.easeQuadOut)
-            .duration(500)
-            .attr('opacity', 0)
-            .on('end', repeatCircleBigger);
-            toggleWuhanCircleR = !toggleWuhanCircleR;
-        }
-      }
-    }
-
-  if (window.scrollY > screenHeight*7 + 300 && e.deltaY > 0) {
-    if (okayToProceedFO) {
-      okayToProceedFO = false;
-      svg.transition().duration(1000).style('opacity', 0);
-    }
-  }
-  if (window.scrollY > screenHeight*8 && window.scrollY < screenHeight*10 && e.deltaY > 0) {
-    console.log('VIDEO');
-  }
-
-  if (window.scrollY > screenHeight*10 + screenHeight/2 && window.scrollY < screenHeight*11) {
-    console.log('TEXT 1');
-    document.querySelector('.secondCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
-  }
-
-  if (window.scrollY > screenHeight*11 + 300 && window.scrollY < screenHeight*12 && e.deltaY > 0) {
-    document.querySelector('.secondCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
-  }
-
-  if (window.scrollY > screenHeight*12 + screenHeight/2 && window.scrollY < screenHeight*13) {
-    document.querySelector('.thirdCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
-  }
-
-  if (window.scrollY > screenHeight*13 + 300 && window.scrollY < screenHeight*14 && e.deltaY > 0) {
-    document.querySelector('.thirdCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
-  }
-
-  if (window.scrollY > screenHeight*14 && window.scrollY < screenHeight*15) {
-    console.log('VERTICAL CHART');
-
-  }
-
-  if (window.scrollY > screenHeight*15 && window.scrollY < screenHeight*16) {
-    console.log('LINE CHART');
-  }
-
-  if (window.scrollY > screenHeight*16 && window.scrollY < screenHeight*17) {
-    console.log('TEXT V');
-  }
-
-  if (window.scrollY > screenHeight*17 && window.scrollY < screenHeight*18) {
-    console.log('3D MAP');
-  }
-
-  if (window.scrollY > screenHeight*18 && window.scrollY < screenHeight*19) {
-    if (okayToProceedHover){
-      okayToProceedHover = false;
-      console.log('HOVER CHART');
-      tempRect.animate([
-        {width: '0px'},
-        {width: tempText.getClientRects()[0].width + 'px'}
-      ], {
-        duration: 500,
-        easing: 'ease-in-out',
-        fill: 'forwards',
-      });
-    }
-  }
-
-  if (window.scrollY > screenHeight*16 && window.scrollY < screenHeight*17) {
-    console.log('2D MAP');
-  }
-
-  if (window.scrollY >= screenHeight*20 + screenHeight/2 ) {
-    document.querySelector('body').style.overflow = 'hidden';
-    console.log('LAST');
-    if (okayToProceedLast) {
-      okayToProceedLast = false;
-      const leftT = document.querySelector('.leftText');
-      const rightT = document.querySelector('.rightText');
-      const leftB = document.querySelector('.leftBox');
-      const rightB = document.querySelector('.rightBox');
-      const middleL = document.querySelector('.middleLine');
-      leftT.style.animation = 'distanceLeftText 1s ease-in-out forwards';
-      rightT.style.animation = 'distanceRightText 1s ease-in-out forwards';
-      leftB.style.animation = 'distanceLeft 1s ease-in-out forwards';
-      rightB.style.animation = 'distanceRight 1s ease-in-out forwards';
-      middleL.style.animation = 'distanceLine 1s ease-in-out forwards';
-
-      document.querySelector('.mask').style.animation = 'cough 0.8s ease-out forwards';
-      maskRect.animate([
-        {height: '0px'},
-        {height: maskText.getClientRects()[0].height + 'px'}
-      ], {
-        duration: 500,
-        easing: 'ease-in-out',
-        fill: 'forwards',
-      });
-    }
-  }
-});
-
-
-
-var worldMap, geojsonWRLD, center, korea;
-
-function loadDataMap(cb) {
-  console.log('loadDataMap');
-  d3.json('world.json')
-      .then(function(data) {
-        cb(data);
-      });       
-}
-
-
-loadDataMap(function(wrldMap) {
-  console.log('cb');
-
-  // 데이터 가져오기
-  worldMap = wrldMap;
-  geojsonWRLD = topojson.feature(worldMap, worldMap.objects.countries);
-  center = d3.geoCentroid(geojsonWRLD);
-
-  // 한국 지도
-  korea = geojsonWRLD.features.find(element => element.id === '410');
-
-  basicSetting();
-});
-
-var projectionWRLD, pathWRLD, bounds, gWRLD;
-// 기본 설정
-function basicSetting() {
-  projectionWRLD = d3.geoMercator()
-    .scale(1)
-    .translate([0, 0]);
-  pathWRLD = d3.geoPath(projectionWRLD);
-  gWRLD = svg.append('g').attr('class', 'mapg');
-  console.log('got gwrld');
-  bounds = pathWRLD.bounds(geojsonWRLD);
-  const widthScale = (bounds[1][0] - bounds[0][0]) / width; 
-  const heightScale = (bounds[1][1] - bounds[0][1]) / height; 
-  const scaleWRLD = 1 /Math.max(widthScale, heightScale); //축척
-  const xoffset = width/2 - scaleWRLD * (bounds[1][0] + bounds[0][0])/2; 
-  const yoffset = height/2 - scaleWRLD * (bounds[1][1] + bounds[0][1])/2; 
-  const offset = [xoffset, yoffset];
-  projectionWRLD.scale(scaleWRLD).translate(offset);
-
-  fillKorea(gWRLD, geojsonWRLD, pathWRLD);
-}
-
-
-function fillKorea(gWRLD, geojsonWRLD, pathWRLD) {
-  // 지도 그리고 한국 배경 색 트랜지션 반복
-  var toggleKoreaFillColor = false;
-
-  gWRLD
-  .selectAll('path').data(geojsonWRLD.features)
-  .enter().append('path')
-  .attr('class', 'country')
-  .attr('d', pathWRLD)
-  .attr('id', d => {
-    if (d.id === '410') return 'korea';
-    else if (d.id === '156') {
-      return 'china';
-    }
-  })
-  .transition()
-  .duration(2000)
-  .style('fill', d => {
-      toggleKoreaFillColor = !toggleKoreaFillColor;
-      if (d.id === '410') {
-          return '#F21905';
-      }
-  })
-  .style('stroke', d => {
-      if (d.id === '410') {
-          return '#F21905';
-      }
-  })
-  .on('end', repeat);
-
-  function repeat(d) {
-      if (d.id === '410' && repeatOn) {
-          d3.select(this)
-          .transition()
-          .duration(1000)
-          .ease(d3.easeQuadIn)
-          .style('fill', toggleKoreaFillColor ? 'transparent' : '#F21905')
-          .style('stroke', toggleKoreaFillColor ? '#696969' : '#F21905')
-          .on('end', repeat);
-          toggleKoreaFillColor = !toggleKoreaFillColor;
-      }
-  }
-
-  console.log('ZOOM KOREA');
-  gWRLD.transition()
-    .duration(2000)
-    .attr('transform-origin', 'center')
-    .attr('transform', browserCheck() === 'Safari' ? ('translate(' + -width*7 + ',' + -height*7 + ') scale(' + 15 + ')' + ' translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')') : 'scale(15)  translate(' + (width/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ',' + (height/2-projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
-}
-
-
+// 첫 타이틀 텍스트 등장 animation
 const titleCon = document.querySelector('.title-container');
 titleCon.animate([
   {opacity: 0},
@@ -1212,11 +938,13 @@ titleCon.animate([
 
 // red-text 줄긋기
 var redText1 = document.querySelector('.red-text1');
-var underline = document.createElement('div');
+var underline = document.createElement('div');  // 밑줄 div
 underline.setAttribute('id', 'underline');
+// red-text 의 위치, 크기에 따라 underline style 지정
 underline.style.top = redText1.getClientRects()[0].y + redText1.getClientRects()[0].height + 'px';
 underline.style.left = redText1.getClientRects()[0].x + 'px';
 
+// 줄 긋기
 underline.animate([
   {width: '0px'},
   {width: redText1.getClientRects()[0].width + 'px'}
@@ -1228,10 +956,7 @@ underline.animate([
 });
 titleCon.appendChild(underline);
 
-
-
-
-
+// 동선 텍스트 마다 밑줄 생성
 for (let story of storyCons) {
   // black-story-text 줄긋기
   let blackText = story.children[0].children[0];
@@ -1271,4 +996,436 @@ window.onload = function () {
   setTimeout(function() {
     scrollTo(0, 0)
   }, 100);
+}
+
+
+// 수정 추가 
+window.addEventListener('touchstart', handleTouchStart);
+window.addEventListener('touchmove', handleScroll);
+window.addEventListener('touchend', handleTouchEnd);
+
+var touchX = 0;
+var touchY = 0;
+var scrollDirection = true;
+
+function handleTouchStart(e) {
+  // touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
+  console.log('s - touchY: ', touchY);
+}
+
+function handleTouchEnd(e) {
+  touchY = e.changedTouches[0].clientY;
+  console.log('e - touchY: ', touchY);
+}
+
+
+
+function handleScroll(e) {
+  console.log(window.pageYOffset);
+  // scrollY는 모바일에서 동작을 하지 않기 때문에 pageYOffset으로 변경
+
+  // 타이틀 ~ 확진
+  if (window.pageYOffset > 0 && window.pageYOffset < screenHeight) {
+    // 화살표 사라지게
+    document.querySelector('#iconArrow').style.opacity = 0;
+  }
+
+  // deltaY는 touch event에는 없기 때문에,
+  // 스크롤 동작에서는 delta y로 방향을 감지하고
+  // 터치 동작에서는 changedTouches에서 clientY가 기존의 clientY 보다 작아졌는지(아래에서 위로 스와이프 했는지) 판별해서 방향을 감지
+  if (window.pageYOffset > screenHeight + screenHeight/2 && window.pageYOffset < screenHeight*2 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    console.log('#####1');
+
+    // 날짜 텍스트
+    document.querySelector('.firstCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
+
+    if (okayToProceed1) {
+      okayToProceed1 = false;
+      repeatOn = false;
+      // 지도 선, 배경 색상 변경
+      gWRLD.selectAll('path')
+        .transition()
+        .duration(1000)
+        .style('stroke', '#66687375');
+
+      d3.select('#korea')
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .style('fill', 'transparent')
+        .style('stroke', '#66687375')
+
+      // 중국으로 이동 + zoom(scale) 정도 약하게
+      gWRLD.transition()
+        .duration(1000)
+        // .attr('transform-origin', 'center')
+        .attr('transform', 'translate(' + width/2 + ', ' + height/2 + ') scale(10) translate(' + -(projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[0]) + ', ' + -(projectionWRLD([mapInfo[1].lon, mapInfo[1].lat])[1]) + ')');
+        // 사파리, 크롬 모두 동작
+    }
+  }
+
+  // 텍스트 사라지는 트랜지션
+  if (window.pageYOffset > screenHeight*2 + 300 && window.pageYOffset < screenHeight*3 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    console.log('#####2');
+    document.querySelector('.firstCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
+  }
+
+  // 지도 테두리 효과, 우한으로 이동, 위치 표시 animation
+  if (window.pageYOffset > screenHeight*3 - 300 && window.pageYOffset < screenHeight*4 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    console.log('#####3');
+    // 한번만 동작
+    if (okayToProceed2) {
+      okayToProceed2 = false;
+
+      // 동선 (1)
+      // 줄 긋기
+      storyCons[0].lastChild.animate([
+        {width: '0px'},
+        {width: storyCons[0].children[0].children[0].getClientRects()[0].width + 'px'}
+      ], {
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
+
+    // 중국 지도 테두리 색 변경
+    d3.select('#china')
+      .transition()
+      .style('stroke', '#6D7BA6');
+
+    // 우한으로 이동
+    gWRLD.transition()
+      .duration(1000)
+      .attr('transform-origin', 'center')
+      .attr('transform', 'translate(' + width/2 + ', ' + height/2 + ') scale(15) translate(' + -(projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[0]) + ', ' + -(projectionWRLD([mapInfo[2].lon, mapInfo[2].lat])[1]) + ')');
+
+      // 위에서 체크 해서 체크할 필요 없음
+      // 작은 원 생성
+      circle1 = svg.append('g').selectAll('svg')
+      .data([0])
+      .enter()
+      .append('circle')
+      .attr('cx', width/2)
+      .attr('cy', height/2)
+      .attr('r', 10)
+      .attr('fill', 'white')
+      .attr('opacity', 0);
+
+      // 화면에 보이기
+      circle1
+      .transition()
+      .delay(1000)
+      .duration(1000)
+      .attr('opacity', 0.5);
+
+      // 바깥 원 생성
+      circle2 = svg.append('g').selectAll('svg')
+      .data([1])
+      .enter()
+      .append('circle')
+      .attr('cx', width/2)
+      .attr('cy', height/2)
+      .attr('r', 10)
+      .attr('fill', 'white')
+      .attr('opacity', 0);
+
+      // 바깥 원 화면에 보이기 & 애니메이션
+      circle2
+      .transition()
+      .delay(1000)
+      .ease(d3.easeQuadIn)
+      .duration(1000)
+      .attr('opacity', 0.5)
+      .attr('r', 20)
+      .transition()
+      .duration(800)
+      .ease(d3.easeQuadOut)
+      .attr('opacity', 0)
+      .on('end', repeatCircle); //계속해서 반복하기
+      
+      // 크기 증가 + 투명도 조절
+      function repeatCircle(d) {
+        toggleWuhanCircleR = !toggleWuhanCircleR;
+        d3.select(this)
+          .attr('r', 10)
+          .transition()
+          .ease(d3.easeQuadIn)
+          .duration(800)
+          .attr('opacity', 0.5)
+          .attr('r', 20)
+          .transition()
+          .ease(d3.easeQuadOut)
+          .duration(500)
+          .attr('opacity', 0)
+          .on('end', repeatCircle);
+          toggleWuhanCircleR = !toggleWuhanCircleR;
+      }
+    }
+  } 
+  
+  // 한국으로 이동, 비행기 아이콘
+  if (window.pageYOffset > screenHeight*4 - 300 && window.pageYOffset < screenHeight*5 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    if (okayToProceed3) {
+      okayToProceed3 = false;
+    
+    // 동선 (2)
+    storyCons[1].lastChild.animate([
+      {width: '0px'},
+      {width: storyCons[1].children[0].children[0].getClientRects()[0].width + 'px'}
+    ], {
+      duration: 500,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
+
+    // 비행기 아이콘 생성을 위해 foreignObject 생성
+    // SVG 안에서 html 사용하기 위해(<i>)
+    foreign = svg.append('foreignObject')
+      .attr('width', 50)
+      .attr('height', 50)
+      .attr('x', width/2 - 25)
+      .attr('y', height/2 - 25)
+      .attr('opacity', 0);
+
+    // xhtml, html div 생성
+    div1 = foreign.append('xhtml:div');
+    div2 = div1.append('div')
+        .attr('x', 25)
+        .attr('y', 25)
+        .attr('width', 50)
+        .attr('height', 50);
+    
+    // 비행기 아이콘 생성
+    plane = div2.append('i');
+    plane.attr('x', 25)
+        .attr('y', 25)
+        .style('color', 'white')
+        .style('font-size', '20px')
+        .attr('class', 'fas fa-plane');
+
+    // 비행기 아이콘 등장 및 이동
+    foreign.transition()
+      .duration(500)
+      .attr('opacity', 1);
+
+    d3.select('#china')
+      .transition()
+      .style('stroke', '#66687375');
+        
+    gWRLD.transition()
+    .duration(2000)
+    .attr('transform-origin', 'center')
+    .attr('transform', 'translate(' + width/2 + ', ' + height/2 + ') scale(15) translate(' + -(projectionWRLD([newMapInfo.lon, newMapInfo.lat])[0]) + ', ' + -(projectionWRLD([newMapInfo.lon, newMapInfo.lat])[1]) + ')');
+
+    // 한국 지도 테두리 색 변경
+    d3.select('#korea')
+        .transition()
+        .style('stroke', '#6D7BA6')
+    }
+  }
+
+  // 지도 테두리 색 변경
+  if (window.pageYOffset > screenHeight*5 - 300 && window.pageYOffset < screenHeight*6 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    if (okayToProceed4) {
+      okayToProceed4 = false;
+
+      // 열 나타내는 텍스트에 밑줄 효과
+      underline2.animate([
+        {width: '0px'},
+        {width: redText2.getClientRects()[0].width + 'px'}
+      ], {
+        delay: 500,
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
+
+      // 동선 (3)
+      storyCons[2].lastChild.animate([
+        {width: '0px'},
+        {width: storyCons[2].children[0].children[0].getClientRects()[0].width + 'px'}
+      ], {
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
+  
+      // 비행기 사라지고 지도 테두리 효과
+      foreign.transition()
+        .duration(500)
+        .attr('opacity', 0)
+
+      d3.select('#korea')
+        .transition()
+        .style('stroke', 'red')
+    }
+  }
+
+  if (window.pageYOffset > screenHeight*6 - 300 && window.pageYOffset < screenHeight*7 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    if (okayToProceed5) {
+      okayToProceed5 = false;
+      
+      // 동선 (4)
+      storyCons[3].lastChild.animate([
+        {width: '0px'},
+        {width: storyCons[3].children[0].children[0].getClientRects()[0].width + 'px'}
+      ], {
+        duration: 500,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      });
+    }
+  }
+
+  // 확진 - 위치 표시 색상 빨강색으로, 크기 크게
+  if (window.pageYOffset > screenHeight*7 - 300 && window.pageYOffset < screenHeight*8 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+    if (okayToProceed6) {
+      okayToProceed6 = false;
+    
+      // 동선(5)
+    storyCons[4].lastChild.animate([
+      {width: '0px'},
+      {width: storyCons[4].children[0].children[0].getClientRects()[0].width + 'px'}
+    ], {
+      duration: 500,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
+
+    // 위치 표시 아이콘 색상 변경 및 animation
+    circle1
+      .transition()
+      .ease(d3.easeQuadIn)
+      .duration(1000)
+      .attr('fill', 'red')
+      .attr('r', 20);
+
+    circle2
+      .transition()
+      .ease(d3.easeQuadIn)
+      .duration(1000)
+      .attr('opacity', 0.5)
+      .attr('r', 100)
+      .attr('fill', 'red')
+      .transition()
+      .duration(800)
+      .ease(d3.easeQuadOut)
+      .attr('opacity', 0)
+      .on('end', repeatCircleBigger);
+
+      // animation 반복
+      function repeatCircleBigger() {
+        toggleWuhanCircleR = !toggleWuhanCircleR;
+        d3.select(this)
+          .attr('r', 20)
+          .transition()
+          .ease(d3.easeQuadIn)
+          .duration(800)
+          .attr('opacity', 0.5)
+          .attr('r', 100)
+          .transition()
+          .ease(d3.easeQuadOut)
+          .duration(500)
+          .attr('opacity', 0)
+          .on('end', repeatCircleBigger);
+          toggleWuhanCircleR = !toggleWuhanCircleR;
+      }
+    }
+  }
+
+// 지도 fade out
+if (window.pageYOffset > screenHeight*7 + 300 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+  if (okayToProceedFO) {
+    okayToProceedFO = false;
+    svg.transition().duration(1000).style('opacity', 0);
+  }
+}
+
+if (window.pageYOffset > screenHeight*8 && window.pageYOffset < screenHeight*10 && e.deltaY > 0) {
+  console.log('VIDEO');
+}
+
+if (window.pageYOffset > screenHeight*10 + screenHeight/2 && window.pageYOffset < screenHeight*11) {
+  console.log('TEXT 1');
+  document.querySelector('.secondCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
+}
+
+if (window.pageYOffset > screenHeight*11 + 300 && window.pageYOffset < screenHeight*12 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+  document.querySelector('.secondCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
+}
+
+if (window.pageYOffset > screenHeight*12 + screenHeight/2 && window.pageYOffset < screenHeight*13) {
+  document.querySelector('.thirdCenterText').style.animation = 'show-text 0.5s ease-in-out forwards';
+}
+
+if (window.pageYOffset > screenHeight*13 + 300 && window.pageYOffset < screenHeight*14 && (e.deltaY > 0 || e.changedTouches[0].clientY < touchY)) {
+  document.querySelector('.thirdCenterText').style.animation = 'unshow-text 0.3s ease-in-out forwards';
+}
+
+if (window.pageYOffset > screenHeight*14 && window.pageYOffset < screenHeight*15) {
+  console.log('VERTICAL CHART');
+
+}
+
+if (window.pageYOffset > screenHeight*15 && window.pageYOffset < screenHeight*16) {
+  console.log('LINE CHART');
+}
+
+if (window.pageYOffset > screenHeight*16 && window.pageYOffset < screenHeight*17) {
+  console.log('TEXT V');
+}
+
+if (window.pageYOffset > screenHeight*17 && window.pageYOffset < screenHeight*18) {
+  console.log('3D MAP');
+}
+
+if (window.pageYOffset > screenHeight*18 && window.pageYOffset < screenHeight*19) {
+  if (okayToProceedHover){
+    okayToProceedHover = false;
+    console.log('HOVER CHART');
+    tempRect.animate([
+      {width: '0px'},
+      {width: tempText.getClientRects()[0].width + 'px'}
+    ], {
+      duration: 500,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
+  }
+}
+
+if (window.pageYOffset > screenHeight*16 && window.pageYOffset < screenHeight*17) {
+  console.log('2D MAP');
+}
+
+if (window.pageYOffset >= screenHeight*20 + screenHeight/2 ) {
+  document.querySelector('body').style.overflow = 'hidden';
+  console.log('LAST');
+  if (okayToProceedLast) {
+    okayToProceedLast = false;
+    const leftT = document.querySelector('.leftText');
+    const rightT = document.querySelector('.rightText');
+    const leftB = document.querySelector('.leftBox');
+    const rightB = document.querySelector('.rightBox');
+    const middleL = document.querySelector('.middleLine');
+    leftT.style.animation = 'distanceLeftText 1s ease-in-out forwards';
+    rightT.style.animation = 'distanceRightText 1s ease-in-out forwards';
+    leftB.style.animation = 'distanceLeft 1s ease-in-out forwards';
+    rightB.style.animation = 'distanceRight 1s ease-in-out forwards';
+    middleL.style.animation = 'distanceLine 1s ease-in-out forwards';
+
+    document.querySelector('.mask').style.animation = 'cough 0.8s ease-out forwards';
+    maskRect.animate([
+      {height: '0px'},
+      {height: maskText.getClientRects()[0].height + 'px'}
+    ], {
+      duration: 500,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
+  }
+
+  touchY = e.changedTouches[0].clientY;
+}
 }
